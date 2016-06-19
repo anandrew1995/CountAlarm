@@ -1,15 +1,15 @@
 'use strict'
 import React, { Component } from 'react';
 import {
-  Text,
-  View,
-  StyleSheet,
-  AsyncStorage,
-  TextInput,
-  Picker,
-  Platform,
-  TouchableHighlight,
-  TouchableNativeFeedback
+	Text,
+	View,
+	StyleSheet,
+	AsyncStorage,
+	TextInput,
+	Picker,
+	Platform,
+	TouchableHighlight,
+	TouchableNativeFeedback
 } from 'react-native';
 import ViewContainer from '../components/ViewContainer';
 import StatusBarBackground from '../components/StatusBarBackground';
@@ -19,15 +19,34 @@ class AlarmCreateScreen extends Component {
 		super(props);
 		this.state = {
 			alarmName: "",
-			alarmType: ""
+			alarmType: "Deductible"
 		}
+		this._saveAlarm = this._saveAlarm.bind(this);
 	}
 	_saveAlarm() {
-		let alarmDetail = {
-			alarmName: this.state.alarmName,
-			alarmType: this.state.alarmType
-		}
-		AsyncStorage.setItem(alarmDetail.alarmName, alarmDetail);
+	    AsyncStorage.getItem("AlarmList."+this.state.alarmName).then((value) => {
+	    	if (this.state.alarmName === "") {
+				this.setState({
+					alarmNameStatus: "Please enter a name."
+				});
+			}
+	    	else if (value != null) {
+				this.setState({
+					alarmNameStatus: "This name already exists."
+				});
+			}
+			else {
+				let alarmDetail = {
+					alarmName: this.state.alarmName,
+					alarmType: this.state.alarmType
+				};
+				AsyncStorage.setItem("AlarmList."+alarmDetail.alarmName, JSON.stringify(alarmDetail));
+				this.setState({
+					alarmNameStatus: "",
+					alarmName: ""
+				});
+			}
+	    }).done();
 	}
 	render() {
 		let TouchableElement = TouchableHighlight;
@@ -35,14 +54,23 @@ class AlarmCreateScreen extends Component {
 	     TouchableElement = TouchableNativeFeedback;
 	    }
 		return (
-			<View style={styles.container}>
+			<ViewContainer>
+			<StatusBarBackground style={{backgroundColor: "mistyrose"}}/>
 				<View>
+					<Text>
+						{this.state.alarmName}
+					</Text>
+					<Text>
+						{this.state.alarmType}
+					</Text>
 					<Text style={styles.instructions}>
 						Alarm Name
 					</Text>
 					<TextInput
 						style={styles.formInput} 
-						onChangeValue={(name) => this.setState({alarmName: name})}/>
+						value={this.state.alarmName}
+						onChangeText={(name) => this.setState({alarmName: name})}/>
+					<Text>{this.state.alarmNameStatus}</Text>
 					<Text style={styles.instructions}>
 						Alarm Type
 					</Text>
@@ -58,9 +86,25 @@ class AlarmCreateScreen extends Component {
 			    	onPress={this._saveAlarm}>
 			        <Text>Save</Text>
 			    </TouchableElement>
-			</View>
+			</ViewContainer>
 		)
 	}
+	componentDidMount() {
+  	   	AsyncStorage.getAllKeys((err, keys) => {
+  	   		let alarmList = []
+  	   		keys.map((result, i, key) => {
+  	   			if (_.startsWith(key[i], "AlarmList.")) {
+  	   				alarmList.push(key[i]);
+  	   			}
+  	   		});
+  	   		AsyncStorage.multiGet(alarmList, (err, stores) => {
+				stores.map((result, i, store) => {
+	 				let key = store[i][0];
+	 				let value = store[i][1];
+				});
+			});
+		});
+  	 }
 }
 
 const styles = StyleSheet.create({
@@ -69,7 +113,6 @@ const styles = StyleSheet.create({
     padding: 30,
     justifyContent: 'center',
     alignItems: 'stretch',
-    backgroundColor: '#F5FCFF',
   },
   formInput: {
   	flex: 1,
