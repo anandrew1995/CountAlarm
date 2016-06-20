@@ -13,15 +13,21 @@ import {
 } from 'react-native';
 import ViewContainer from '../components/ViewContainer';
 import StatusBarBackground from '../components/StatusBarBackground';
+import NewItem from '../components/NewItem';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 class AlarmCreateScreen extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
 			alarmName: "",
-			alarmType: "Deductible"
-		}
+			alarmType: "Deductible",
+			saveConfirm: false,
+			itemCreateViewList: []
+		};
 		this._saveAlarm = this._saveAlarm.bind(this);
+		this._renderNewItemCreateList = this._renderNewItemCreateList.bind(this);
+		this._unlockNewItemCreate = this._unlockNewItemCreate.bind(this);
 	}
 	_saveAlarm() {
 	    AsyncStorage.getItem("AlarmList."+this.state.alarmName).then((value) => {
@@ -42,27 +48,57 @@ class AlarmCreateScreen extends Component {
 				};
 				AsyncStorage.setItem("AlarmList."+alarmDetail.alarmName, JSON.stringify(alarmDetail));
 				this.setState({
+					saveConfirm: true,
 					alarmNameStatus: "",
+					alarmNameValue: this.state.alarmName,
 					alarmName: ""
 				});
 			}
+			this.setState({
+				saveConfirm: false
+			});
 	    }).done();
+	}
+	_unlockNewItemCreate() {
+		this.state.itemCreateViewList.push("");
+		this.setState({
+			itemCreateViewList: this.state.itemCreateViewList
+		});
+	}
+	_renderNewItemCreateList() {
+		let TouchableElement = TouchableHighlight;
+	    if (Platform.OS === 'android') {
+	    	TouchableElement = TouchableNativeFeedback;
+	    }
+		return this.state.itemCreateViewList.map((item, i) => {
+			return (
+				<View key={i}>
+					<NewItem 
+						alarmName={this.state.alarmNameValue} 
+						saveConfirm={this.state.saveConfirm}/>
+					<TouchableElement
+				    	style={[styles.button, {backgroundColor: "pink"}]}
+				    	onPress={() => {
+				    		this.state.itemCreateViewList.splice(i, 1);
+				    		this.setState({
+								itemCreateViewList: this.state.itemCreateViewList
+							});
+				    	}}>
+				        <Icon name="minus" size={25}/>
+				    </TouchableElement>
+			    </View>
+			)
+		})
 	}
 	render() {
 		let TouchableElement = TouchableHighlight;
 	    if (Platform.OS === 'android') {
-	     TouchableElement = TouchableNativeFeedback;
+	    	TouchableElement = TouchableNativeFeedback;
 	    }
 		return (
 			<ViewContainer>
-			<StatusBarBackground style={{backgroundColor: "mistyrose"}}/>
+				<StatusBarBackground/>
 				<View>
-					<Text>
-						{this.state.alarmName}
-					</Text>
-					<Text>
-						{this.state.alarmType}
-					</Text>
 					<Text style={styles.instructions}>
 						Alarm Name
 					</Text>
@@ -71,20 +107,24 @@ class AlarmCreateScreen extends Component {
 						value={this.state.alarmName}
 						onChangeText={(name) => this.setState({alarmName: name})}/>
 					<Text>{this.state.alarmNameStatus}</Text>
+					<Text style={styles.instructions}>Items</Text>
+					<NewItem 
+						alarmName={this.state.alarmNameValue} 
+						saveConfirm={this.state.saveConfirm}/>
+					{this._renderNewItemCreateList()}
+					<TouchableElement
+				    	style={[styles.button, {backgroundColor: "powderblue"}]}
+				    	onPress={this._unlockNewItemCreate}>
+				        <Icon name="plus" size={25}/>
+				    </TouchableElement>
 					<Text style={styles.instructions}>
 						Alarm Type
 					</Text>
-					<Picker
-					  	selectedValue={this.state.alarmType}
-					  	onValueChange={(type) => this.setState({alarmType: type})}>
-					  	<Picker.Item label="Deductible" value="Deductible" />
-					  	<Picker.Item label="Time" value="Time" />
-					</Picker>
 				</View>
 				<TouchableElement
-			    	style={styles.button}
+			    	style={[styles.button, {backgroundColor: "powderblue"}]}
 			    	onPress={this._saveAlarm}>
-			        <Text>Save</Text>
+			        <Icon name="check" size={25}/>
 			    </TouchableElement>
 			</ViewContainer>
 		)
@@ -108,36 +148,35 @@ class AlarmCreateScreen extends Component {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 30,
-    justifyContent: 'center',
-    alignItems: 'stretch',
-  },
-  formInput: {
-  	flex: 1,
-  	height: 20,
-  	fontSize: 13,
-  	borderWidth: 1,
-  	borderColor: "grey"
-  },
-  instructions: {
-  	textAlign: "center",
-  	color: '#333333',
-  	marginBottom: 5,
-  	marginTop: 5
-  },
-  saved: {
-  	fontSize: 20,
-  	textAlign: 'center',
-  	margin: 10
-  },
-  button: {
-  	backgroundColor: "coral",
-  	justifyContent: 'center',
-  	alignItems: 'center',
-  	height: 30
-  },
+	container: {
+		flex: 1,
+		padding: 30,
+		justifyContent: 'center',
+		alignItems: 'stretch',
+	},
+	formInput: {
+		flex: 1,
+		height: 20,
+		fontSize: 13,
+		borderWidth: 1,
+		borderColor: "grey"
+	},
+	instructions: {
+		textAlign: "center",
+		color: '#333333',
+		marginBottom: 5,
+		marginTop: 5
+	},
+	saved: {
+		fontSize: 20,
+		textAlign: 'center',
+		margin: 10
+	},
+	button: {
+		justifyContent: 'center',
+		alignItems: 'center',
+		height: 30
+	},
 });
 
 module.exports = AlarmCreateScreen

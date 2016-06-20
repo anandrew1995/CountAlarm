@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import {
     Text,
     View,
+    ListView,
     StyleSheet,
     TouchableOpacity,
     Platform,
@@ -18,11 +19,63 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 class AlarmDetailsScreen extends Component {
     constructor(props) {
         super(props);
+        let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 != r2});
+        this.state = {
+            itemDataSource: ds.cloneWithRows([])
+        }
         this._deleteAlarm = this._deleteAlarm.bind(this);
+        this._getAllItems = this._getAllItems.bind(this);
+        this._getAllItems();
     }
     _deleteAlarm() {
         AsyncStorage.removeItem("AlarmList."+this.props.alarm.alarmName);
+        AsyncStorage.getAllKeys((err, keys) => {
+            let itemKeyList = []
+            keys.map((result, i, key) => {
+                console.log(key[i])
+                if (_.startsWith(key[i], "ItemList."+this.props.alarm.alarmName)) {
+                    itemKeyList.push(key[i]);
+                }
+            });
+            console.log(itemKeyList)
+            AsyncStorage.multiRemove(itemKeyList);
+        });
         this.props.navigator.pop();
+    }
+    _renderItemRow(item) {
+        if (item) {
+            return (
+                <Text>{`${_.capitalize(item.itemName)} ${item.itemTotal}`}</Text>
+            )
+        }
+        else {
+            return null;
+        }
+    }
+    _getAllItems() {
+        AsyncStorage.getAllKeys((err, keys) => {
+            let itemKeyList = []
+            keys.map((result, i, key) => {
+                console.log(key[i])
+                if (_.startsWith(key[i], "ItemList."+this.props.alarm.alarmName)) {
+                    itemKeyList.push(key[i]);
+                }
+            });
+            console.log(itemKeyList)
+            AsyncStorage.multiGet(itemKeyList, (err, stores) => {
+                let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 != r2});
+                let itemViewList = [];
+                stores.map((result, i, store) => {
+                    let key = store[i][0];
+                    let value = store[i][1];
+                    itemViewList.push(JSON.parse(value));
+                    console.log(itemViewList)
+                });
+                this.setState({
+                    itemDataSource: ds.cloneWithRows(itemViewList)
+                });
+            });
+        });
     }
     render() {
         let TouchableElement = TouchableHighlight;
@@ -31,7 +84,7 @@ class AlarmDetailsScreen extends Component {
         }
         return (
             <ViewContainer style={{backgroundColor: "dodgerblue"}}>
-                <StatusBarBackground style={{backgroundColor: "mistyrose"}}/>
+                <StatusBarBackground/>
                 <TouchableOpacity onPress={() => this.props.navigator.pop()}>
                     <Icon name="chevron-left" size={30} />
                 </TouchableOpacity>
@@ -42,8 +95,15 @@ class AlarmDetailsScreen extends Component {
                     onPress={this._deleteAlarm}>
                     <Text>Delete</Text>
                 </TouchableElement>
+                <ListView 
+                    dataSource={this.state.itemDataSource}
+                    enableEmptySections={true}
+                    renderRow={(item) => {return this._renderItemRow(item)}} />
             </ViewContainer>
         )
+    }
+    componentWillReceiveProps(nextProps) {
+        this._getAllItems();
     }
 }
 

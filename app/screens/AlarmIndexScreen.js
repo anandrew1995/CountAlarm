@@ -19,11 +19,13 @@ class AlarmIndexScreen extends Component {
 		super(props);
 		let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 != r2});
 		this.state = {
-			alarmDataSource: ds.cloneWithRows([{}])
+			alarmDataSource: ds.cloneWithRows([])
 		}
 		this._navigateToAlarmDetails = this._navigateToAlarmDetails.bind(this);
 		this._renderAlarmRow = this._renderAlarmRow.bind(this);
 		this._getAllAlarms = this._getAllAlarms.bind(this);
+		this._getAllAlarms();
+		// AsyncStorage.clear();
 	}
   	_navigateToAlarmDetails(alarm) {
     	this.props.navigator.push({
@@ -48,13 +50,13 @@ class AlarmIndexScreen extends Component {
   	}
   	_getAllAlarms() {
 		AsyncStorage.getAllKeys((err, keys) => {
-			let alarmkeyList = []
+			let alarmKeyList = []
 			keys.map((result, i, key) => {
 				if (_.startsWith(key[i], "AlarmList.")) {
-					alarmkeyList.push(key[i]);
+					alarmKeyList.push(key[i]);
 				}
 			});
-			AsyncStorage.multiGet(alarmkeyList, (err, stores) => {
+			AsyncStorage.multiGet(alarmKeyList, (err, stores) => {
 				let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 != r2});
 				let alarmViewList = [];
 				stores.map((result, i, store) => {
@@ -62,7 +64,6 @@ class AlarmIndexScreen extends Component {
 					let value = store[i][1];
 					alarmViewList.push(JSON.parse(value));
 				});
-				console.log(alarmViewList);
 				this.setState({
 					alarmDataSource: ds.cloneWithRows(alarmViewList)
 				});
@@ -70,30 +71,30 @@ class AlarmIndexScreen extends Component {
 		});
   	}
   	render() {
-  		this._getAllAlarms();
 		return (
 			<ViewContainer>
-				<StatusBarBackground style={{backgroundColor: "mistyrose"}}/>
-				<Text style={styles.container}>
-					CountAlarm
-				</Text>
+				<StatusBarBackground/>
+				<Text style={styles.instructions}>CountAlarm</Text>
 				<ListView 
-					style={{marginTop: 100}}
+					style={{marginTop: 50}}
 					dataSource={this.state.alarmDataSource}
 					enableEmptySections={true}
 					renderRow={(alarm) => {return this._renderAlarmRow(alarm)}} />
 			</ViewContainer>
 		)
   	}
+  	componentWillReceiveProps(nextProps) {
+  		this._getAllAlarms();
+  	}
 }
 
 const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		textAlign: 'center',
-	    justifyContent: 'center',
-	    alignItems: 'stretch',
-	},
+	instructions: {
+  		textAlign: "center",
+  		color: '#333333',
+  		marginBottom: 5,
+  		marginTop: 5
+  	},
 	alarmRow: {
 		flexDirection: "row",
 		justifyContent: "flex-start",
