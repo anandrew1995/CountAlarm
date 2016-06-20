@@ -37,12 +37,10 @@ class AlarmDetailsScreen extends Component {
         AsyncStorage.getAllKeys((err, keys) => {
             let itemKeyList = []
             keys.map((result, i, key) => {
-                console.log(key[i])
                 if (_.startsWith(key[i], "ItemList."+this.props.alarm.alarmName)) {
                     itemKeyList.push(key[i]);
                 }
             });
-            console.log(itemKeyList)
             AsyncStorage.multiRemove(itemKeyList);
         });
         this.props.navigator.pop();
@@ -81,12 +79,10 @@ class AlarmDetailsScreen extends Component {
         AsyncStorage.getAllKeys((err, keys) => {
             let itemKeyList = []
             keys.map((result, i, key) => {
-                console.log(key[i])
                 if (_.startsWith(key[i], "ItemList."+this.props.alarm.alarmName)) {
                     itemKeyList.push(key[i]);
                 }
             });
-            console.log(itemKeyList)
             AsyncStorage.multiGet(itemKeyList, (err, stores) => {
                 let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 != r2});
                 let itemViewList = [];
@@ -134,8 +130,7 @@ const styles = StyleSheet.create({
         marginTop: 100,
         fontSize: 20,
         textAlign: "center",
-        marginBottom: 5,
-        marginTop: 5
+        marginBottom: 5
     },
     button: {
         backgroundColor: "pink",

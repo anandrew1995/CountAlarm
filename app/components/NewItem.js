@@ -38,12 +38,12 @@ class NewItem extends Component {
 		AsyncStorage.getItem("ItemList."+this.props.alarmName+"."+this.state.itemName).then((value) => {
 	    	if (this.state.itemName === "") {
 				this.setState({
-					itemNameStatus: "*"
+					itemNameStatus: "*Required"
 				});
 			}
 			if (this.state.itemTotal === "") {
 				this.setState({
-					itemTotalStatus: "*"
+					itemTotalStatus: "*Required"
 				});
 			}
 			// if (this.state.autoDeductAmount === "") {
