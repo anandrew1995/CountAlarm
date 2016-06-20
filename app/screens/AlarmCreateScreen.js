@@ -9,19 +9,24 @@ import {
 	Picker,
 	Platform,
 	TouchableHighlight,
-	TouchableNativeFeedback
+	TouchableNativeFeedback,
+	ScrollView
 } from 'react-native';
 import ViewContainer from '../components/ViewContainer';
 import StatusBarBackground from '../components/StatusBarBackground';
 import NewItem from '../components/NewItem';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
+let TouchableElement = TouchableHighlight;
+if (Platform.OS === 'android') {
+	TouchableElement = TouchableNativeFeedback;
+}
+
 class AlarmCreateScreen extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
 			alarmName: "",
-			alarmType: "Deductible",
 			saveConfirm: false,
 			itemCreateViewList: []
 		};
@@ -43,8 +48,7 @@ class AlarmCreateScreen extends Component {
 			}
 			else {
 				let alarmDetail = {
-					alarmName: this.state.alarmName,
-					alarmType: this.state.alarmType
+					alarmName: this.state.alarmName
 				};
 				AsyncStorage.setItem("AlarmList."+alarmDetail.alarmName, JSON.stringify(alarmDetail));
 				this.setState({
@@ -91,14 +95,10 @@ class AlarmCreateScreen extends Component {
 		})
 	}
 	render() {
-		let TouchableElement = TouchableHighlight;
-	    if (Platform.OS === 'android') {
-	    	TouchableElement = TouchableNativeFeedback;
-	    }
 		return (
 			<ViewContainer>
 				<StatusBarBackground/>
-				<View>
+				<ScrollView>
 					<Text style={styles.instructions}>
 						Alarm Name
 					</Text>
@@ -117,16 +117,14 @@ class AlarmCreateScreen extends Component {
 				    	onPress={this._unlockNewItemCreate}>
 				        <Icon name="plus" size={25}/>
 				    </TouchableElement>
-					<Text style={styles.instructions}>
-						Alarm Type
-					</Text>
-				</View>
-				<TouchableElement
-			    	style={[styles.button, {backgroundColor: "powderblue"}]}
-			    	onPress={this._saveAlarm}>
-			        <Icon name="check" size={25}/>
-			    </TouchableElement>
-			</ViewContainer>
+				    <Text style={styles.instructions}>Notify when any item reaches</Text>
+					<TouchableElement
+				    	style={[styles.button, {backgroundColor: "lightgreen"}]}
+				    	onPress={this._saveAlarm}>
+				        <Icon name="check" size={25}/>
+				    </TouchableElement>
+			    </ScrollView>
+		    </ViewContainer>
 		)
 	}
 	componentDidMount() {

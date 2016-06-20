@@ -9,12 +9,17 @@ import {
     Platform,
     TouchableHighlight,
     TouchableNativeFeedback,
-    AsyncStorage
+    AsyncStorage,
+    ScrollView
 } from 'react-native';
 import ViewContainer from '../components/ViewContainer';
 import StatusBarBackground from '../components/StatusBarBackground';
 import _ from 'lodash';
 import Icon from 'react-native-vector-icons/FontAwesome';
+let TouchableElement = TouchableHighlight;
+if (Platform.OS === 'android') {
+    TouchableElement = TouchableNativeFeedback;
+}
 
 class AlarmDetailsScreen extends Component {
     constructor(props) {
@@ -45,7 +50,27 @@ class AlarmDetailsScreen extends Component {
     _renderItemRow(item) {
         if (item) {
             return (
-                <Text>{`${_.capitalize(item.itemName)} ${item.itemTotal}`}</Text>
+                <View style={{marginLeft: 20, marginTop: 5}}>
+                    <Text style={{fontWeight: "bold"}}>
+                    {_.capitalize(item.itemName)}
+                    </Text>
+                    <Text>
+                        Total: {item.itemTotal}
+                    </Text>
+                    <Text>
+                        Current: {item.currentAmount}
+                    </Text>
+                    {item.autoDeductAmount == "" ?
+                        <Text>
+                            Auto-Deduct: N/A
+                        </Text>
+                        :
+                        <Text>
+                            Auto Deduct: {item.autoDeductAmount} every {item.autoDeductPeriod} {item.autoDeductPeriodUnit}(s)
+                        </Text>
+                    }
+
+                </View>
             )
         }
         else {
@@ -69,7 +94,6 @@ class AlarmDetailsScreen extends Component {
                     let key = store[i][0];
                     let value = store[i][1];
                     itemViewList.push(JSON.parse(value));
-                    console.log(itemViewList)
                 });
                 this.setState({
                     itemDataSource: ds.cloneWithRows(itemViewList)
@@ -78,27 +102,25 @@ class AlarmDetailsScreen extends Component {
         });
     }
     render() {
-        let TouchableElement = TouchableHighlight;
-        if (Platform.OS === 'android') {
-         TouchableElement = TouchableNativeFeedback;
-        }
         return (
-            <ViewContainer style={{backgroundColor: "dodgerblue"}}>
+            <ViewContainer style={{backgroundColor: "powderblue"}}>
                 <StatusBarBackground/>
-                <TouchableOpacity onPress={() => this.props.navigator.pop()}>
-                    <Icon name="chevron-left" size={30} />
-                </TouchableOpacity>
-                <Text style={{marginTop: 100, fontSize: 20}}>{`Alarm Details Screen`}</Text>
-                <Text style={styles.alarmName}>{`${_.capitalize(this.props.alarm.alarmName)} ${_.capitalize(this.props.alarm.alarmType)}`}</Text>
-                <TouchableElement
-                    style={styles.button}
-                    onPress={this._deleteAlarm}>
-                    <Text>Delete</Text>
-                </TouchableElement>
-                <ListView 
-                    dataSource={this.state.itemDataSource}
-                    enableEmptySections={true}
-                    renderRow={(item) => {return this._renderItemRow(item)}} />
+                <ScrollView>
+                    <TouchableOpacity onPress={() => this.props.navigator.pop()}>
+                        <Icon name="chevron-left" size={30} />
+                    </TouchableOpacity>
+                    <Text style={styles.alarmName}>{`${_.capitalize(this.props.alarm.alarmName)}`}</Text>
+                    <ListView
+                        style={{height: 415}}
+                        dataSource={this.state.itemDataSource}
+                        enableEmptySections={true}
+                        renderRow={(item) => {return this._renderItemRow(item)}} />
+                    <TouchableElement
+                        style={styles.button}
+                        onPress={this._deleteAlarm}>
+                        <Icon name="times" size={25} />
+                    </TouchableElement>
+                </ScrollView>
             </ViewContainer>
         )
     }
@@ -109,10 +131,14 @@ class AlarmDetailsScreen extends Component {
 
 const styles = StyleSheet.create({
     alarmName: {
-        marginLeft: 25
+        marginTop: 100,
+        fontSize: 20,
+        textAlign: "center",
+        marginBottom: 5,
+        marginTop: 5
     },
     button: {
-        backgroundColor: "coral",
+        backgroundColor: "pink",
         justifyContent: 'center',
         alignItems: 'center',
         height: 30

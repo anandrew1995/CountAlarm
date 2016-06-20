@@ -32,8 +32,7 @@ class CountAlarm extends Component {
 					title={`New Alarm`}
 					iconName="plus"
 					onPress={() => this.setState({selectedTab: "AlarmCreate"})}>
-				<AppNavigator 
-					initialRoute={{id: "AlarmCreate"}} />
+					<AppNavigator initialRoute={{id: "AlarmCreate"}} />
 				</Icon.TabBarItemIOS>
 			</TabBarIOS>
 		)
