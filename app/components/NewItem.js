@@ -46,16 +46,6 @@ class NewItem extends Component {
 					itemTotalStatus: "*Required"
 				});
 			}
-			// if (this.state.autoDeductAmount === "") {
-			// 	this.setState({
-			// 		autoDeductAmountStatus: "*"
-			// 	});
-			// }
-			// if (this.state.autoDeductPeriod === "") {
-			// 	this.setState({
-			// 		autoDeductPeriodStatus: "*"
-			// 	});
-			// }
 			else {
 				let itemDetail = {
 					itemName: this.state.itemName,

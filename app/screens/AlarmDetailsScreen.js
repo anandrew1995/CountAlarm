@@ -30,7 +30,7 @@ class AlarmDetailsScreen extends Component {
         }
         this._deleteAlarm = this._deleteAlarm.bind(this);
         this._getAllItems = this._getAllItems.bind(this);
-        this._getAllItems();
+        this._deductOne = this._deductOne.bind(this);
     }
     _deleteAlarm() {
         AsyncStorage.removeItem("AlarmList."+this.props.alarm.alarmName);
@@ -44,6 +44,22 @@ class AlarmDetailsScreen extends Component {
             AsyncStorage.multiRemove(itemKeyList);
         });
         this.props.navigator.pop();
+    }
+    _addOne(item) {
+        if (item.currentAmount < item.itemTotal) {
+            let itemDetail = {
+                currentAmount: item.currentAmount+1
+            };
+            AsyncStorage.mergeItem("ItemList."+this.props.alarm.alarmName+"."+item.itemName, JSON.stringify(itemDetail));
+        }
+    }
+    _deductOne(item) {
+        if (item.currentAmount > 0) {
+            let itemDetail = {
+                currentAmount: item.currentAmount-1
+            };
+            AsyncStorage.mergeItem("ItemList."+this.props.alarm.alarmName+"."+item.itemName, JSON.stringify(itemDetail));
+        }
     }
     _renderItemRow(item) {
         if (item) {
@@ -67,7 +83,20 @@ class AlarmDetailsScreen extends Component {
                             Auto Deduct: {item.autoDeductAmount} every {item.autoDeductPeriod} {item.autoDeductPeriodUnit}(s)
                         </Text>
                     }
-
+                    <TouchableElement
+                        style={styles.addButton}
+                        onPress={() => {
+                            this._addOne(item);
+                        }}>
+                        <Text>Add 1</Text>
+                    </TouchableElement>
+                    <TouchableElement
+                        style={styles.deductButton}
+                        onPress={() => {
+                            this._deductOne(item);
+                        }}>
+                        <Text>Deduct 1</Text>
+                    </TouchableElement>
                 </View>
             )
         }
@@ -79,6 +108,7 @@ class AlarmDetailsScreen extends Component {
         AsyncStorage.getAllKeys((err, keys) => {
             let itemKeyList = []
             keys.map((result, i, key) => {
+                console.log(key[i])
                 if (_.startsWith(key[i], "ItemList."+this.props.alarm.alarmName)) {
                     itemKeyList.push(key[i]);
                 }
@@ -91,23 +121,26 @@ class AlarmDetailsScreen extends Component {
                     let value = store[i][1];
                     itemViewList.push(JSON.parse(value));
                 });
-                this.setState({
-                    itemDataSource: ds.cloneWithRows(itemViewList)
-                });
+                if (ds.cloneWithRows(itemViewList) != this.state.itemDataSource) {
+                    this.setState({
+                        itemDataSource: ds.cloneWithRows(itemViewList)
+                    });
+                }
             });
         });
     }
     render() {
+        this._getAllItems();
         return (
             <ViewContainer style={{backgroundColor: "powderblue"}}>
                 <StatusBarBackground/>
                 <ScrollView>
-                    <TouchableOpacity onPress={() => this.props.navigator.pop()}>
+                    <TouchableOpacity
+                        onPress={() => this.props.navigator.pop()}>
                         <Icon name="chevron-left" size={30} />
                     </TouchableOpacity>
                     <Text style={styles.alarmName}>{`${_.capitalize(this.props.alarm.alarmName)}`}</Text>
                     <ListView
-                        style={{height: 415}}
                         dataSource={this.state.itemDataSource}
                         enableEmptySections={true}
                         renderRow={(item) => {return this._renderItemRow(item)}} />
@@ -120,23 +153,37 @@ class AlarmDetailsScreen extends Component {
             </ViewContainer>
         )
     }
-    componentWillReceiveProps(nextProps) {
-        this._getAllItems();
-    }
 }
 
 const styles = StyleSheet.create({
     alarmName: {
-        marginTop: 100,
+        marginTop: 20,
         fontSize: 20,
         textAlign: "center",
         marginBottom: 5
     },
     button: {
+        marginTop: 40,
         backgroundColor: "pink",
         justifyContent: 'center',
         alignItems: 'center',
         height: 30
+    },
+    addButton: {
+        backgroundColor: "aliceblue",
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: 30,
+        marginRight: 20,
+        marginTop: 5
+    },
+    deductButton: {
+        backgroundColor: "lavenderblush",
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: 30,
+        marginRight: 20,
+        marginTop: 5
     },
 });
 

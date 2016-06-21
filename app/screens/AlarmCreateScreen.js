@@ -16,6 +16,8 @@ import ViewContainer from '../components/ViewContainer';
 import StatusBarBackground from '../components/StatusBarBackground';
 import NewItem from '../components/NewItem';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import DB from '../database/DB';
+import { DBEvents } from 'react-native-db-models'
 
 let TouchableElement = TouchableHighlight;
 if (Platform.OS === 'android') {
@@ -35,33 +37,58 @@ class AlarmCreateScreen extends Component {
 		this._unlockNewItemCreate = this._unlockNewItemCreate.bind(this);
 	}
 	_saveAlarm() {
-	    AsyncStorage.getItem("AlarmList."+this.state.alarmName).then((value) => {
-	    	if (this.state.alarmName === "") {
-				this.setState({
-					alarmNameStatus: "Please enter a name."
-				});
-			}
-	    	else if (value != null) {
-				this.setState({
-					alarmNameStatus: "This name already exists."
-				});
-			}
-			else {
-				let alarmDetail = {
-					alarmName: this.state.alarmName
-				};
-				AsyncStorage.setItem("AlarmList."+alarmDetail.alarmName, JSON.stringify(alarmDetail));
-				this.setState({
-					saveConfirm: true,
-					alarmNameStatus: "",
-					alarmNameValue: this.state.alarmName,
-					alarmName: ""
-				});
-			}
+		if (this.state.alarmName === "") {
 			this.setState({
-				saveConfirm: false
+				alarmNameStatus: "Please enter a name."
 			});
-	    }).done();
+		}
+    	else if (DB.AlarmList.get({alarmName: this.state.alarmName}) != null) {
+			this.setState({
+				alarmNameStatus: "This name already exists."
+			});
+		}
+		else {
+			let alarmDetail = {
+				alarmName: this.state.alarmName
+			};
+			DB.AlarmList.add(alarmDetail);
+			this.setState({
+				saveConfirm: true,
+				alarmNameStatus: "",
+				alarmNameValue: this.state.alarmName,
+				alarmName: ""
+			});
+		}
+		this.setState({
+			saveConfirm: false
+		});
+	  //   AsyncStorage.getItem("AlarmList."+this.state.alarmName).then((value) => {
+	  //   	if (this.state.alarmName === "") {
+			// 	this.setState({
+			// 		alarmNameStatus: "Please enter a name."
+			// 	});
+			// }
+	  //   	else if (value != null) {
+			// 	this.setState({
+			// 		alarmNameStatus: "This name already exists."
+			// 	});
+			// }
+			// else {
+			// 	let alarmDetail = {
+			// 		alarmName: this.state.alarmName
+			// 	};
+			// 	AsyncStorage.setItem("AlarmList."+alarmDetail.alarmName, JSON.stringify(alarmDetail));
+			// 	this.setState({
+			// 		saveConfirm: true,
+			// 		alarmNameStatus: "",
+			// 		alarmNameValue: this.state.alarmName,
+			// 		alarmName: ""
+			// 	});
+			// }
+			// this.setState({
+			// 	saveConfirm: false
+			// });
+	  //   }).done();
 	}
 	_unlockNewItemCreate() {
 		this.state.itemCreateViewList.push("");
