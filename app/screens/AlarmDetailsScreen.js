@@ -9,22 +9,25 @@ import {
     Platform,
     TouchableHighlight,
     TouchableNativeFeedback,
-    AsyncStorage,
     ScrollView
 } from 'react-native';
 import ViewContainer from '../components/ViewContainer';
 import StatusBarBackground from '../components/StatusBarBackground';
 import _ from 'lodash';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import DB from '../database/DB';
+import { DBEvents } from 'react-native-db-models'
+
 let TouchableElement = TouchableHighlight;
 if (Platform.OS === 'android') {
     TouchableElement = TouchableNativeFeedback;
 }
 
+let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 != r2});
+
 class AlarmDetailsScreen extends Component {
     constructor(props) {
         super(props);
-        let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 != r2});
         this.state = {
             itemDataSource: ds.cloneWithRows([])
         }
@@ -33,16 +36,8 @@ class AlarmDetailsScreen extends Component {
         this._deductOne = this._deductOne.bind(this);
     }
     _deleteAlarm() {
-        AsyncStorage.removeItem("AlarmList."+this.props.alarm.alarmName);
-        AsyncStorage.getAllKeys((err, keys) => {
-            let itemKeyList = []
-            keys.map((result, i, key) => {
-                if (_.startsWith(key[i], "ItemList."+this.props.alarm.alarmName)) {
-                    itemKeyList.push(key[i]);
-                }
-            });
-            AsyncStorage.multiRemove(itemKeyList);
-        });
+        DB.AlarmList.remove({alarmName: this.props.alarm.alarmName});
+        DB.ItemList.remove({alarmName: this.props.alarm.alarmName});
         this.props.navigator.pop();
     }
     _addOne(item) {
@@ -50,7 +45,7 @@ class AlarmDetailsScreen extends Component {
             let itemDetail = {
                 currentAmount: item.currentAmount+1
             };
-            AsyncStorage.mergeItem("ItemList."+this.props.alarm.alarmName+"."+item.itemName, JSON.stringify(itemDetail));
+            DB.ItemList.update({alarmName: this.props.alarm.alarmName, itemName: item.itemName}, itemDetail);
         }
     }
     _deductOne(item) {
@@ -58,7 +53,7 @@ class AlarmDetailsScreen extends Component {
             let itemDetail = {
                 currentAmount: item.currentAmount-1
             };
-            AsyncStorage.mergeItem("ItemList."+this.props.alarm.alarmName+"."+item.itemName, JSON.stringify(itemDetail));
+            DB.ItemList.update({alarmName: this.props.alarm.alarmName, itemName: item.itemName}, itemDetail);
         }
     }
     _renderItemRow(item) {
@@ -105,32 +100,16 @@ class AlarmDetailsScreen extends Component {
         }
     }
     _getAllItems() {
-        AsyncStorage.getAllKeys((err, keys) => {
-            let itemKeyList = []
-            keys.map((result, i, key) => {
-                console.log(key[i])
-                if (_.startsWith(key[i], "ItemList."+this.props.alarm.alarmName)) {
-                    itemKeyList.push(key[i]);
-                }
-            });
-            AsyncStorage.multiGet(itemKeyList, (err, stores) => {
-                let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 != r2});
-                let itemViewList = [];
-                stores.map((result, i, store) => {
-                    let key = store[i][0];
-                    let value = store[i][1];
-                    itemViewList.push(JSON.parse(value));
-                });
-                if (ds.cloneWithRows(itemViewList) != this.state.itemDataSource) {
-                    this.setState({
-                        itemDataSource: ds.cloneWithRows(itemViewList)
-                    });
-                }
+        DB.ItemList.get_all((result) => {
+            this.setState({
+                itemDataSource: ds.cloneWithRows(result.rows)
             });
         });
     }
     render() {
-        this._getAllItems();
+        DBEvents.on("all", () => {
+            this._getAllAlarms();
+        });
         return (
             <ViewContainer style={{backgroundColor: "powderblue"}}>
                 <StatusBarBackground/>

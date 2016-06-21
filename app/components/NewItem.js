@@ -8,10 +8,12 @@ import {
   	StyleSheet,
   	Platform,
 	TouchableHighlight,
-	TouchableNativeFeedback,
-	AsyncStorage
+	TouchableNativeFeedback
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import DB from '../database/DB';
+import { DBEvents } from 'react-native-db-models'
+
 let TouchableElement = TouchableHighlight;
 if (Platform.OS === 'android') {
 	TouchableElement = TouchableNativeFeedback;
@@ -35,43 +37,42 @@ class NewItem extends Component {
 		this._saveItemDetails = this._saveItemDetails.bind(this);
 	}
 	_saveItemDetails() {
-		AsyncStorage.getItem("ItemList."+this.props.alarmName+"."+this.state.itemName).then((value) => {
-	    	if (this.state.itemName === "") {
-				this.setState({
-					itemNameStatus: "*Required"
-				});
-			}
-			if (this.state.itemTotal === "") {
-				this.setState({
-					itemTotalStatus: "*Required"
-				});
-			}
-			else {
-				let itemDetail = {
-					itemName: this.state.itemName,
-					itemTotal: this.state.itemTotal,
-					autoDeductAmount: this.state.autoDeductAmount,
-					autoDeductPeriod: this.state.autoDeductPeriod,
-					autoDeductPeriodUnit: this.state.autoDeductPeriodUnit,
-					currentAmount: this.state.itemTotal
-				};
-				AsyncStorage.setItem("ItemList."+this.props.alarmName+"."+this.state.itemName, JSON.stringify(itemDetail));
-				this.setState({
-					itemName: "",
-					itemTotal: "",
-					autoDeductAmount: "",
-					autoDeductPeriod: "",
-					itemNameStatus: "",
-					itemTotalStatus: "",
-					autoDeductAmountStatus: "",
-					autoDeductPeriodStatus: "",
-					saveAvailableFlag: false
-				});
-				this.setState({
-			    	saveAvailableFlag: true
-			    });
-			}
-	    }).done();
+		if (this.state.itemName === "") {
+			this.setState({
+				itemNameStatus: "*Required"
+			});
+		}
+		if (this.state.itemTotal === "") {
+			this.setState({
+				itemTotalStatus: "*Required"
+			});
+		}
+		else {
+			let itemDetail = {
+				alarmName: this.props.alarmName,
+				itemName: this.state.itemName,
+				itemTotal: this.state.itemTotal,
+				autoDeductAmount: this.state.autoDeductAmount,
+				autoDeductPeriod: this.state.autoDeductPeriod,
+				autoDeductPeriodUnit: this.state.autoDeductPeriodUnit,
+				currentAmount: this.state.itemTotal
+			};
+			DB.ItemList.add(itemDetail);
+			this.setState({
+				itemName: "",
+				itemTotal: "",
+				autoDeductAmount: "",
+				autoDeductPeriod: "",
+				itemNameStatus: "",
+				itemTotalStatus: "",
+				autoDeductAmountStatus: "",
+				autoDeductPeriodStatus: "",
+				saveAvailableFlag: false
+			});
+			this.setState({
+		    	saveAvailableFlag: true
+		    });
+		}
 	}
 	render() {
 		return (

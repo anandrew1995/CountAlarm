@@ -4,7 +4,6 @@ import {
 	Text,
 	View,
 	StyleSheet,
-	AsyncStorage,
 	TextInput,
 	Picker,
 	Platform,
@@ -37,58 +36,34 @@ class AlarmCreateScreen extends Component {
 		this._unlockNewItemCreate = this._unlockNewItemCreate.bind(this);
 	}
 	_saveAlarm() {
-		if (this.state.alarmName === "") {
+		DB.AlarmList.get({alarmName: this.state.alarmName}, (result) => {
+			console.log(result)
+			if (this.state.alarmName === "") {
+				this.setState({
+					alarmNameStatus: "Please enter a name."
+				});
+			}
+	    	else if (result.length != 0) {
+				this.setState({
+					alarmNameStatus: "This name already exists."
+				});
+			}
+			else {
+				let alarmDetail = {
+					alarmName: this.state.alarmName
+				};
+				DB.AlarmList.add(alarmDetail);
+				this.setState({
+					saveConfirm: true,
+					alarmNameStatus: "",
+					alarmNameValue: this.state.alarmName,
+					alarmName: ""
+				});
+			}
 			this.setState({
-				alarmNameStatus: "Please enter a name."
+				saveConfirm: false
 			});
-		}
-    	else if (DB.AlarmList.get({alarmName: this.state.alarmName}) != null) {
-			this.setState({
-				alarmNameStatus: "This name already exists."
-			});
-		}
-		else {
-			let alarmDetail = {
-				alarmName: this.state.alarmName
-			};
-			DB.AlarmList.add(alarmDetail);
-			this.setState({
-				saveConfirm: true,
-				alarmNameStatus: "",
-				alarmNameValue: this.state.alarmName,
-				alarmName: ""
-			});
-		}
-		this.setState({
-			saveConfirm: false
 		});
-	  //   AsyncStorage.getItem("AlarmList."+this.state.alarmName).then((value) => {
-	  //   	if (this.state.alarmName === "") {
-			// 	this.setState({
-			// 		alarmNameStatus: "Please enter a name."
-			// 	});
-			// }
-	  //   	else if (value != null) {
-			// 	this.setState({
-			// 		alarmNameStatus: "This name already exists."
-			// 	});
-			// }
-			// else {
-			// 	let alarmDetail = {
-			// 		alarmName: this.state.alarmName
-			// 	};
-			// 	AsyncStorage.setItem("AlarmList."+alarmDetail.alarmName, JSON.stringify(alarmDetail));
-			// 	this.setState({
-			// 		saveConfirm: true,
-			// 		alarmNameStatus: "",
-			// 		alarmNameValue: this.state.alarmName,
-			// 		alarmName: ""
-			// 	});
-			// }
-			// this.setState({
-			// 	saveConfirm: false
-			// });
-	  //   }).done();
 	}
 	_unlockNewItemCreate() {
 		this.state.itemCreateViewList.push("");
@@ -154,22 +129,6 @@ class AlarmCreateScreen extends Component {
 		    </ViewContainer>
 		)
 	}
-	componentDidMount() {
-  	   	AsyncStorage.getAllKeys((err, keys) => {
-  	   		let alarmList = []
-  	   		keys.map((result, i, key) => {
-  	   			if (_.startsWith(key[i], "AlarmList.")) {
-  	   				alarmList.push(key[i]);
-  	   			}
-  	   		});
-  	   		AsyncStorage.multiGet(alarmList, (err, stores) => {
-				stores.map((result, i, store) => {
-	 				let key = store[i][0];
-	 				let value = store[i][1];
-				});
-			});
-		});
-  	 }
 }
 
 const styles = StyleSheet.create({

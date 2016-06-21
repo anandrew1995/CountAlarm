@@ -6,7 +6,6 @@ import {
 	ListView,
 	StyleSheet,
 	TouchableOpacity,
-	AsyncStorage,
 	Navigator
 } from 'react-native';
 import ViewContainer from '../components/ViewContainer';
@@ -16,22 +15,20 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import DB from '../database/DB';
 import { DBEvents } from 'react-native-db-models'
 
-DBEvents.on("all", function(){
-    console.log("Database changed");
-})
+let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 != r2});
 
 class AlarmIndexScreen extends Component {
 	constructor(props) {
 		super(props);
-		let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 != r2});
 		this.state = {
 			alarmDataSource: ds.cloneWithRows([])
-		}
+		};
 		this._navigateToAlarmDetails = this._navigateToAlarmDetails.bind(this);
 		this._renderAlarmRow = this._renderAlarmRow.bind(this);
 		this._getAllAlarms = this._getAllAlarms.bind(this);
 		this._getAllAlarms();
-		// AsyncStorage.clear();
+		DB.AlarmList.erase_db();
+		DB.ItemList.erase_db();
 	}
   	_navigateToAlarmDetails(alarm) {
     	this.props.navigator.push({
@@ -56,33 +53,16 @@ class AlarmIndexScreen extends Component {
   	}
   	_getAllAlarms() {
   		DB.AlarmList.get_all((result) => {
+  			console.log(result.rows)
   			this.setState({
-                alarmDataSource: ds.cloneWithRows(result)
+                alarmDataSource: ds.cloneWithRows(result.rows)
             });
   		});
-		// AsyncStorage.getAllKeys((err, keys) => {
-		// 	let alarmKeyList = []
-		// 	keys.map((result, i, key) => {
-		// 		if (_.startsWith(key[i], "AlarmList.")) {
-		// 			alarmKeyList.push(key[i]);
-		// 		}
-		// 	});
-		// 	AsyncStorage.multiGet(alarmKeyList, (err, stores) => {
-		// 		let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 != r2});
-		// 		let alarmViewList = [];
-		// 		stores.map((result, i, store) => {
-		// 			let key = store[i][0];
-		// 			let value = store[i][1];
-		// 			alarmViewList.push(JSON.parse(value));
-		// 		});
-		// 		console.log("AVL"+alarmViewList)
-  //               this.setState({
-  //                   alarmDataSource: ds.cloneWithRows(alarmViewList)
-  //               });
-		// 	});
-		// });
   	}
   	render() {
+  		DBEvents.on("all", () => {
+			this._getAllAlarms();
+		});
 		return (
 			<ViewContainer>
 				<StatusBarBackground/>
@@ -94,9 +74,6 @@ class AlarmIndexScreen extends Component {
 					renderRow={(alarm) => {return this._renderAlarmRow(alarm)}} />
 			</ViewContainer>
 		)
-  	}
-  	componentWillReceiveProps(nextProps) {
-  		this._getAllAlarms();
   	}
 }
 
