@@ -41,7 +41,7 @@ class AlarmDetailsScreen extends Component {
     _deleteAlarm() {
         AsyncStorage.removeItem("AlarmList."+this.props.alarm.alarmName);
         AsyncStorage.getAllKeys((err, keys) => {
-            let itemKeyList = []
+            let itemKeyList = [];
             keys.map((result, i, key) => {
                 if (_.startsWith(key[i], "ItemList."+this.props.alarm.alarmName)) {
                     itemKeyList.push(key[i]);
@@ -106,6 +106,9 @@ class AlarmDetailsScreen extends Component {
                 </View>
             )
         }
+        else {
+            return null;
+        }
     }
     _getAllItems() {
         AsyncStorage.getAllKeys((err, keys) => {
@@ -124,9 +127,11 @@ class AlarmDetailsScreen extends Component {
                     itemViewList.push(JSON.parse(value));
                 });
                 if (ds.cloneWithRows(itemViewList) != this.state.itemDataSource) {
-                    this.setState({
-                        itemDataSource: ds.cloneWithRows(itemViewList)
-                    });
+                    if (itemViewList.length > 0) {
+                        this.setState({
+                            itemDataSource: ds.cloneWithRows(itemViewList)
+                        });
+                    }
                 }
             });
         });
@@ -138,7 +143,7 @@ class AlarmDetailsScreen extends Component {
             sceneConfig: Navigator.SceneConfigs.FloatFromBottom
         });
     }
-    componentWillMount() {
+    componentDidMount() {
         this._getAllItems();
     }
     render() {
@@ -151,6 +156,7 @@ class AlarmDetailsScreen extends Component {
                         <Icon name="chevron-left" size={30} />
                     </TouchableOpacity>
                     <Text style={styles.alarmName}>{`${_.capitalize(this.props.alarm.alarmName)}`}</Text>
+                    <Text style={styles.instructions}>Items</Text>
                     <ListView
                         dataSource={this.state.itemDataSource}
                         enableEmptySections={true}
@@ -169,12 +175,18 @@ class AlarmDetailsScreen extends Component {
             </ViewContainer>
         )
     }
-    componentDidUpdate(prevProps, prevState) {
+    componentDidUpdate() {
         this._getAllItems();
     }
 }
 
 const styles = StyleSheet.create({
+    instructions: {
+        textAlign: "center",
+        color: '#333333',
+        marginBottom: 5,
+        marginTop: 5
+    },
     alarmName: {
         marginTop: 20,
         fontSize: 20,

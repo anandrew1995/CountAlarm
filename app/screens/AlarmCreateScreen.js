@@ -10,6 +10,7 @@ import {
 	Platform,
 	TouchableHighlight,
 	TouchableNativeFeedback,
+	TouchableOpacity,
 	ScrollView
 } from 'react-native';
 import ViewContainer from '../components/ViewContainer';
@@ -62,10 +63,15 @@ class AlarmCreateScreen extends Component {
 			<ViewContainer>
 				<StatusBarBackground/>
 				<ScrollView>
+					<TouchableOpacity
+                        onPress={() => this.props.navigator.pop()}>
+                        <Icon name="chevron-left" size={30} />
+                    </TouchableOpacity>
 					<Text style={styles.instructions}>
 						Alarm Name
 					</Text>
 					<TextInput
+						autoCapitalize="sentences"
 						style={styles.formInput} 
 						value={this.state.alarmName}
 						onChangeText={(name) => this.setState({alarmName: name})}/>

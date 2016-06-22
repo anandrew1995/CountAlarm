@@ -10,6 +10,7 @@ import {
   	Platform,
 	TouchableHighlight,
 	TouchableNativeFeedback,
+	TouchableOpacity,
 	AsyncStorage
 } from 'react-native';
 import ViewContainer from '../components/ViewContainer';
@@ -39,22 +40,72 @@ class ItemAddScreen extends Component {
 	}
 	_saveItemDetails() {
 		AsyncStorage.getItem("ItemList."+this.props.alarm.alarmName+"."+this.state.itemName).then((value) => {
-	    	if (this.state.itemName === "") {
+	    	this.state.itemName === "" ?
 				this.setState({
 					itemNameStatus: "*Required"
+				})
+				:
+				this.setState({
+					itemNameStatus: ""
 				});
-			}
-			if (this.state.itemTotal === "") {
+			this.state.itemTotal === "" ?
 				this.setState({
 					itemTotalStatus: "*Required"
+				})
+				:
+				this.setState({
+					itemTotalStatus: ""
 				});
-			}
-			if (value != null) {
+			value != null ?
 				this.setState({
 					itemNameStatus: "This item already exists."
+				})
+				:
+				this.setState({
+					itemNameStatus: ""
 				});
+			!(this.state.itemTotal > 0) ?
+				this.setState({
+					itemTotalStatus: "You must enter a number."
+				})
+				:
+				this.setState({
+					itemTotalStatus: ""
+				});
+			if (this.state.autoDeductAmount != "" && this.state.autoDeductPeriod != "") {
+				!(this.state.autoDeductAmount > 0) ?
+					this.setState({
+						autoDeductAmountStatus: "You must enter a number."
+					})
+					:
+					this.setState({
+						autoDeductAmountStatus: ""
+					});
+				!(this.state.autoDeductPeriod > 0) ?
+					this.setState({
+						autoDeductPeriodStatus: "You must enter a number."
+					})
+					:
+					this.setState({
+						autoDeductPeriodStatus: ""
+					});
 			}
-			else {
+			else if (this.state.autoDeductAmount != "" || this.state.autoDeductPeriod != ""){
+				if (this.state.autoDeductAmount === "") {
+					this.setState({
+						autoDeductAmountStatus: "You must enter both values"
+					});
+				}
+				if (this.state.autoDeductPeriod === "") {
+					this.setState({
+						autoDeductPeriodStatus: "You must enter both values"
+					});
+				}
+			}
+			if (this.state.itemNameStatus === "" && 
+				this.state.itemTotalStatus === "" && 
+				this.state.autoDeductAmountStatus === "" && 
+				this.state.autoDeductPeriodStatus === "") {
 				let itemDetail = {
 					itemName: this.state.itemName,
 					itemTotal: this.state.itemTotal,
@@ -83,8 +134,13 @@ class ItemAddScreen extends Component {
 			<ViewContainer>
 				<StatusBarBackground/>
 				<ScrollView>
+					<TouchableOpacity
+                        onPress={() => this.props.navigator.pop()}>
+                        <Icon name="chevron-left" size={30} />
+                    </TouchableOpacity>
 					<Text style={styles.instructions}>Item Name</Text>
 					<TextInput
+						autoCapitalize="sentences"
 						style={styles.formInput} 
 						value={this.state.itemName}
 						placeholder="Enter a name for this alarm. (Required)"

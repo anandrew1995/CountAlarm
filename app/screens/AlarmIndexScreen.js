@@ -54,6 +54,9 @@ class AlarmIndexScreen extends Component {
 				</TouchableOpacity>
 		    )
 		}
+		else {
+			return null;
+		}
   	}
   	_getAllAlarms() {
 		AsyncStorage.getAllKeys((err, keys) => {
@@ -72,9 +75,11 @@ class AlarmIndexScreen extends Component {
 					alarmViewList.push(JSON.parse(value));
 				});
 				if (ds.cloneWithRows(alarmViewList) != this.state.alarmDataSource) {
-                    this.setState({
-	                    alarmDataSource: ds.cloneWithRows(alarmViewList)
-	                });
+					if (alarmViewList.length > 0) {
+	                    this.setState({
+		                    alarmDataSource: ds.cloneWithRows(alarmViewList)
+		                });
+	                }
                 }
 			});
 		});
@@ -85,7 +90,7 @@ class AlarmIndexScreen extends Component {
     		sceneConfig: Navigator.SceneConfigs.FloatFromBottom
     	});
   	}
-  	componentWillMount() {
+  	componentDidMount() {
 		this._getAllAlarms();
   	}
   	render() {
@@ -106,7 +111,7 @@ class AlarmIndexScreen extends Component {
 			</ViewContainer>
 		)
   	}
-  	componentDidUpdate(prevProps, prevState) {
+  	componentDidUpdate() {
         this._getAllAlarms();
     }
 }
