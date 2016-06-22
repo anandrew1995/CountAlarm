@@ -4,6 +4,7 @@ import {
 	Text,
 	View,
 	StyleSheet,
+	AsyncStorage,
 	TextInput,
 	Picker,
 	Platform,
@@ -13,8 +14,8 @@ import {
 } from 'react-native';
 import ViewContainer from '../components/ViewContainer';
 import StatusBarBackground from '../components/StatusBarBackground';
+import _ from 'lodash';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import DB from '../database/DB';
 
 let TouchableElement = TouchableHighlight;
 if (Platform.OS === 'android') {
@@ -26,19 +27,18 @@ class AlarmCreateScreen extends Component {
 		super(props);
 		this.state = {
 			alarmName: "",
-			alarmNameStatus: ""
+			itemCreateViewList: []
 		};
 		this._saveAlarm = this._saveAlarm.bind(this);
 	}
 	_saveAlarm() {
-		DB.AlarmList.find({alarmName: this.state.alarmName}).then((result) => {
-			console.log(result)
-			if (this.state.alarmName === "") {
+	    AsyncStorage.getItem("AlarmList."+this.state.alarmName).then((value) => {
+	    	if (this.state.alarmName === "") {
 				this.setState({
 					alarmNameStatus: "Please enter a name."
 				});
 			}
-	    	else if (result.length != 0) {
+	    	else if (value != null) {
 				this.setState({
 					alarmNameStatus: "This name already exists."
 				});
@@ -47,25 +47,30 @@ class AlarmCreateScreen extends Component {
 				let alarmDetail = {
 					alarmName: this.state.alarmName
 				};
-				DB.AlarmList.add(alarmDetail);
+				AsyncStorage.setItem("AlarmList."+alarmDetail.alarmName, JSON.stringify(alarmDetail));
 				this.setState({
 					alarmNameStatus: "",
+					alarmNameValue: this.state.alarmName,
 					alarmName: ""
 				});
+				this.props.navigator.pop();
 			}
-		});
+	    }).done();
 	}
 	render() {
 		return (
 			<ViewContainer>
 				<StatusBarBackground/>
 				<ScrollView>
-					<Text style={styles.instructions}>Alarm Name</Text>
+					<Text style={styles.instructions}>
+						Alarm Name
+					</Text>
 					<TextInput
 						style={styles.formInput} 
 						value={this.state.alarmName}
 						onChangeText={(name) => this.setState({alarmName: name})}/>
 					<Text>{this.state.alarmNameStatus}</Text>
+					<Text style={styles.instructions}>Add Items within the alarm.</Text>
 				    <Text style={styles.instructions}>Notify when any item reaches</Text>
 					<TouchableElement
 				    	style={[styles.button, {backgroundColor: "lightgreen"}]}

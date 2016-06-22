@@ -9,6 +9,7 @@ import {
     Platform,
     TouchableHighlight,
     TouchableNativeFeedback,
+    AsyncStorage,
     ScrollView,
     Navigator
 } from 'react-native';
@@ -16,7 +17,6 @@ import ViewContainer from '../components/ViewContainer';
 import StatusBarBackground from '../components/StatusBarBackground';
 import _ from 'lodash';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import DB from '../database/DB';
 
 let TouchableElement = TouchableHighlight;
 if (Platform.OS === 'android') {
@@ -30,7 +30,7 @@ class AlarmDetailsScreen extends Component {
         super(props);
         this.state = {
             itemDataSource: ds.cloneWithRows([])
-        }
+        };
         this._deleteAlarm = this._deleteAlarm.bind(this);
         this._addOne = this._addOne.bind(this);
         this._deductOne = this._deductOne.bind(this);
@@ -39,8 +39,16 @@ class AlarmDetailsScreen extends Component {
         this._navigateToItemAddScreen = this._navigateToItemAddScreen.bind(this);
     }
     _deleteAlarm() {
-        DB.AlarmList.remove({alarmName: this.props.alarm.alarmName});
-        DB.ItemList.remove({alarmName: this.props.alarm.alarmName});
+        AsyncStorage.removeItem("AlarmList."+this.props.alarm.alarmName);
+        AsyncStorage.getAllKeys((err, keys) => {
+            let itemKeyList = []
+            keys.map((result, i, key) => {
+                if (_.startsWith(key[i], "ItemList."+this.props.alarm.alarmName)) {
+                    itemKeyList.push(key[i]);
+                }
+            });
+            AsyncStorage.multiRemove(itemKeyList);
+        });
         this.props.navigator.pop();
     }
     _addOne(item) {
@@ -48,7 +56,7 @@ class AlarmDetailsScreen extends Component {
             let itemDetail = {
                 currentAmount: item.currentAmount+1
             };
-            DB.ItemList.update(itemDetail, {alarmName: this.props.alarm.alarmName, itemName: item.itemName});
+            AsyncStorage.mergeItem("ItemList."+this.props.alarm.alarmName+"."+item.itemName, JSON.stringify(itemDetail));
         }
     }
     _deductOne(item) {
@@ -56,7 +64,7 @@ class AlarmDetailsScreen extends Component {
             let itemDetail = {
                 currentAmount: item.currentAmount-1
             };
-            DB.ItemList.update(itemDetail, {alarmName: this.props.alarm.alarmName, itemName: item.itemName});
+            AsyncStorage.mergeItem("ItemList."+this.props.alarm.alarmName+"."+item.itemName, JSON.stringify(itemDetail));
         }
     }
     _renderItemRow(item) {
@@ -98,23 +106,40 @@ class AlarmDetailsScreen extends Component {
                 </View>
             )
         }
-        else {
-            return null;
-        }
     }
     _getAllItems() {
-        DB.ItemList.find().then((result) => {
-            this.setState({
-                itemDataSource: ds.cloneWithRows(result)
+        AsyncStorage.getAllKeys((err, keys) => {
+            let itemKeyList = []
+            keys.map((result, i, key) => {
+                console.log(key[i])
+                if (_.startsWith(key[i], "ItemList."+this.props.alarm.alarmName)) {
+                    itemKeyList.push(key[i]);
+                }
             });
-        })
+            AsyncStorage.multiGet(itemKeyList, (err, stores) => {
+                let itemViewList = [];
+                stores.map((result, i, store) => {
+                    let key = store[i][0];
+                    let value = store[i][1];
+                    itemViewList.push(JSON.parse(value));
+                });
+                if (ds.cloneWithRows(itemViewList) != this.state.itemDataSource) {
+                    this.setState({
+                        itemDataSource: ds.cloneWithRows(itemViewList)
+                    });
+                }
+            });
+        });
     }
-    _navigateToItemAddScreen(alarmName) {
+    _navigateToItemAddScreen(alarm) {
         this.props.navigator.push({
             id: "ItemAdd",
-            alarmName: alarmName,
+            alarm: alarm,
             sceneConfig: Navigator.SceneConfigs.FloatFromBottom
         });
+    }
+    componentWillMount() {
+        this._getAllItems();
     }
     render() {
         return (
@@ -131,12 +156,12 @@ class AlarmDetailsScreen extends Component {
                         enableEmptySections={true}
                         renderRow={(item) => {return this._renderItemRow(item)}} />
                     <TouchableElement
-                        style={styles.button}
-                        onPress={(event) => this._navigateToItemAddScreen(this.props.alarm.alarmName)}>
+                        style={[styles.button, {backgroundColor: "lightgreen"}]}
+                        onPress={(event) => this._navigateToItemAddScreen(this.props.alarm)}>
                         <Icon name="plus" size={25} />
                     </TouchableElement>
                     <TouchableElement
-                        style={styles.button}
+                        style={[styles.button, {backgroundColor: "pink"}]}
                         onPress={this._deleteAlarm}>
                         <Icon name="times" size={25} />
                     </TouchableElement>
@@ -158,7 +183,6 @@ const styles = StyleSheet.create({
     },
     button: {
         marginTop: 40,
-        backgroundColor: "pink",
         justifyContent: 'center',
         alignItems: 'center',
         height: 30

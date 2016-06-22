@@ -2,7 +2,8 @@
 import React, { Component } from 'react';
 import {
     StyleSheet,
-    Navigator
+    Navigator,
+    Text
 } from 'react-native';
 import AlarmIndexScreen from '../screens/AlarmIndexScreen'
 import AlarmDetailsScreen from '../screens/AlarmDetailsScreen'
@@ -20,7 +21,6 @@ class AppNavigator extends Component {
                    <AlarmIndexScreen {...globalNavigatorProps} />
                 )
             case "AlarmDetails":
-                navigator.pop();
                 return (
                     <AlarmDetailsScreen {...globalNavigatorProps}
                     alarm={route.alarm} />
@@ -32,7 +32,7 @@ class AppNavigator extends Component {
             case "ItemAdd":
                 return (
                     <ItemAddScreen {...globalNavigatorProps} 
-                    alarmName={route.alarmName}/>
+                    alarm={route.alarm} />
                 )
             default:
                 return (
