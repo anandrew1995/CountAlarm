@@ -10,27 +10,33 @@ import {
     TouchableHighlight,
     TouchableNativeFeedback,
     AsyncStorage,
-    ScrollView
+    ScrollView,
+    Navigator
 } from 'react-native';
 import ViewContainer from '../components/ViewContainer';
 import StatusBarBackground from '../components/StatusBarBackground';
 import _ from 'lodash';
 import Icon from 'react-native-vector-icons/FontAwesome';
+
 let TouchableElement = TouchableHighlight;
 if (Platform.OS === 'android') {
     TouchableElement = TouchableNativeFeedback;
 }
 
+let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 != r2});
+
 class AlarmDetailsScreen extends Component {
     constructor(props) {
         super(props);
-        let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 != r2});
         this.state = {
             itemDataSource: ds.cloneWithRows([])
-        }
+        };
         this._deleteAlarm = this._deleteAlarm.bind(this);
-        this._getAllItems = this._getAllItems.bind(this);
+        this._addOne = this._addOne.bind(this);
         this._deductOne = this._deductOne.bind(this);
+        this._renderItemRow = this._renderItemRow.bind(this);
+        this._getAllItems = this._getAllItems.bind(this);
+        this._navigateToItemAddScreen = this._navigateToItemAddScreen.bind(this);
     }
     _deleteAlarm() {
         AsyncStorage.removeItem("AlarmList."+this.props.alarm.alarmName);
@@ -100,9 +106,6 @@ class AlarmDetailsScreen extends Component {
                 </View>
             )
         }
-        else {
-            return null;
-        }
     }
     _getAllItems() {
         AsyncStorage.getAllKeys((err, keys) => {
@@ -114,7 +117,6 @@ class AlarmDetailsScreen extends Component {
                 }
             });
             AsyncStorage.multiGet(itemKeyList, (err, stores) => {
-                let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 != r2});
                 let itemViewList = [];
                 stores.map((result, i, store) => {
                     let key = store[i][0];
@@ -129,8 +131,17 @@ class AlarmDetailsScreen extends Component {
             });
         });
     }
-    render() {
+    _navigateToItemAddScreen(alarm) {
+        this.props.navigator.push({
+            id: "ItemAdd",
+            alarm: alarm,
+            sceneConfig: Navigator.SceneConfigs.FloatFromBottom
+        });
+    }
+    componentWillMount() {
         this._getAllItems();
+    }
+    render() {
         return (
             <ViewContainer style={{backgroundColor: "powderblue"}}>
                 <StatusBarBackground/>
@@ -145,13 +156,21 @@ class AlarmDetailsScreen extends Component {
                         enableEmptySections={true}
                         renderRow={(item) => {return this._renderItemRow(item)}} />
                     <TouchableElement
-                        style={styles.button}
+                        style={[styles.button, {backgroundColor: "lightgreen"}]}
+                        onPress={(event) => this._navigateToItemAddScreen(this.props.alarm)}>
+                        <Icon name="plus" size={25} />
+                    </TouchableElement>
+                    <TouchableElement
+                        style={[styles.button, {backgroundColor: "pink"}]}
                         onPress={this._deleteAlarm}>
                         <Icon name="times" size={25} />
                     </TouchableElement>
                 </ScrollView>
             </ViewContainer>
         )
+    }
+    componentDidUpdate(prevProps, prevState) {
+        this._getAllItems();
     }
 }
 
@@ -164,7 +183,6 @@ const styles = StyleSheet.create({
     },
     button: {
         marginTop: 40,
-        backgroundColor: "pink",
         justifyContent: 'center',
         alignItems: 'center',
         height: 30

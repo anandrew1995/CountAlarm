@@ -14,10 +14,8 @@ import {
 } from 'react-native';
 import ViewContainer from '../components/ViewContainer';
 import StatusBarBackground from '../components/StatusBarBackground';
-import NewItem from '../components/NewItem';
+import _ from 'lodash';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import DB from '../database/DB';
-import { DBEvents } from 'react-native-db-models'
 
 let TouchableElement = TouchableHighlight;
 if (Platform.OS === 'android') {
@@ -29,97 +27,35 @@ class AlarmCreateScreen extends Component {
 		super(props);
 		this.state = {
 			alarmName: "",
-			saveConfirm: false,
 			itemCreateViewList: []
 		};
 		this._saveAlarm = this._saveAlarm.bind(this);
-		this._renderNewItemCreateList = this._renderNewItemCreateList.bind(this);
-		this._unlockNewItemCreate = this._unlockNewItemCreate.bind(this);
 	}
 	_saveAlarm() {
-		if (this.state.alarmName === "") {
-			this.setState({
-				alarmNameStatus: "Please enter a name."
-			});
-		}
-    	else if (DB.AlarmList.get({alarmName: this.state.alarmName}) != null) {
-			this.setState({
-				alarmNameStatus: "This name already exists."
-			});
-		}
-		else {
-			let alarmDetail = {
-				alarmName: this.state.alarmName
-			};
-			DB.AlarmList.add(alarmDetail);
-			this.setState({
-				saveConfirm: true,
-				alarmNameStatus: "",
-				alarmNameValue: this.state.alarmName,
-				alarmName: ""
-			});
-		}
-		this.setState({
-			saveConfirm: false
-		});
-	  //   AsyncStorage.getItem("AlarmList."+this.state.alarmName).then((value) => {
-	  //   	if (this.state.alarmName === "") {
-			// 	this.setState({
-			// 		alarmNameStatus: "Please enter a name."
-			// 	});
-			// }
-	  //   	else if (value != null) {
-			// 	this.setState({
-			// 		alarmNameStatus: "This name already exists."
-			// 	});
-			// }
-			// else {
-			// 	let alarmDetail = {
-			// 		alarmName: this.state.alarmName
-			// 	};
-			// 	AsyncStorage.setItem("AlarmList."+alarmDetail.alarmName, JSON.stringify(alarmDetail));
-			// 	this.setState({
-			// 		saveConfirm: true,
-			// 		alarmNameStatus: "",
-			// 		alarmNameValue: this.state.alarmName,
-			// 		alarmName: ""
-			// 	});
-			// }
-			// this.setState({
-			// 	saveConfirm: false
-			// });
-	  //   }).done();
-	}
-	_unlockNewItemCreate() {
-		this.state.itemCreateViewList.push("");
-		this.setState({
-			itemCreateViewList: this.state.itemCreateViewList
-		});
-	}
-	_renderNewItemCreateList() {
-		let TouchableElement = TouchableHighlight;
-	    if (Platform.OS === 'android') {
-	    	TouchableElement = TouchableNativeFeedback;
-	    }
-		return this.state.itemCreateViewList.map((item, i) => {
-			return (
-				<View key={i}>
-					<NewItem 
-						alarmName={this.state.alarmNameValue} 
-						saveConfirm={this.state.saveConfirm}/>
-					<TouchableElement
-				    	style={[styles.button, {backgroundColor: "pink"}]}
-				    	onPress={() => {
-				    		this.state.itemCreateViewList.splice(i, 1);
-				    		this.setState({
-								itemCreateViewList: this.state.itemCreateViewList
-							});
-				    	}}>
-				        <Icon name="minus" size={25}/>
-				    </TouchableElement>
-			    </View>
-			)
-		})
+	    AsyncStorage.getItem("AlarmList."+this.state.alarmName).then((value) => {
+	    	if (this.state.alarmName === "") {
+				this.setState({
+					alarmNameStatus: "Please enter a name."
+				});
+			}
+	    	else if (value != null) {
+				this.setState({
+					alarmNameStatus: "This name already exists."
+				});
+			}
+			else {
+				let alarmDetail = {
+					alarmName: this.state.alarmName
+				};
+				AsyncStorage.setItem("AlarmList."+alarmDetail.alarmName, JSON.stringify(alarmDetail));
+				this.setState({
+					alarmNameStatus: "",
+					alarmNameValue: this.state.alarmName,
+					alarmName: ""
+				});
+				this.props.navigator.pop();
+			}
+	    }).done();
 	}
 	render() {
 		return (
@@ -134,16 +70,7 @@ class AlarmCreateScreen extends Component {
 						value={this.state.alarmName}
 						onChangeText={(name) => this.setState({alarmName: name})}/>
 					<Text>{this.state.alarmNameStatus}</Text>
-					<Text style={styles.instructions}>Items</Text>
-					<NewItem 
-						alarmName={this.state.alarmNameValue} 
-						saveConfirm={this.state.saveConfirm}/>
-					{this._renderNewItemCreateList()}
-					<TouchableElement
-				    	style={[styles.button, {backgroundColor: "powderblue"}]}
-				    	onPress={this._unlockNewItemCreate}>
-				        <Icon name="plus" size={25}/>
-				    </TouchableElement>
+					<Text style={styles.instructions}>Add Items within the alarm.</Text>
 				    <Text style={styles.instructions}>Notify when any item reaches</Text>
 					<TouchableElement
 				    	style={[styles.button, {backgroundColor: "lightgreen"}]}
@@ -154,22 +81,6 @@ class AlarmCreateScreen extends Component {
 		    </ViewContainer>
 		)
 	}
-	componentDidMount() {
-  	   	AsyncStorage.getAllKeys((err, keys) => {
-  	   		let alarmList = []
-  	   		keys.map((result, i, key) => {
-  	   			if (_.startsWith(key[i], "AlarmList.")) {
-  	   				alarmList.push(key[i]);
-  	   			}
-  	   		});
-  	   		AsyncStorage.multiGet(alarmList, (err, stores) => {
-				stores.map((result, i, store) => {
-	 				let key = store[i][0];
-	 				let value = store[i][1];
-				});
-			});
-		});
-  	 }
 }
 
 const styles = StyleSheet.create({
