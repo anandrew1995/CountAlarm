@@ -9,14 +9,14 @@ import {
     Platform,
     TouchableHighlight,
     TouchableNativeFeedback,
-    ScrollView
+    ScrollView,
+    Navigator
 } from 'react-native';
 import ViewContainer from '../components/ViewContainer';
 import StatusBarBackground from '../components/StatusBarBackground';
 import _ from 'lodash';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import DB from '../database/DB';
-import { DBEvents } from 'react-native-db-models'
 
 let TouchableElement = TouchableHighlight;
 if (Platform.OS === 'android') {
@@ -32,8 +32,11 @@ class AlarmDetailsScreen extends Component {
             itemDataSource: ds.cloneWithRows([])
         }
         this._deleteAlarm = this._deleteAlarm.bind(this);
-        this._getAllItems = this._getAllItems.bind(this);
+        this._addOne = this._addOne.bind(this);
         this._deductOne = this._deductOne.bind(this);
+        this._renderItemRow = this._renderItemRow.bind(this);
+        this._getAllItems = this._getAllItems.bind(this);
+        this._navigateToItemAddScreen = this._navigateToItemAddScreen.bind(this);
     }
     _deleteAlarm() {
         DB.AlarmList.remove({alarmName: this.props.alarm.alarmName});
@@ -45,7 +48,7 @@ class AlarmDetailsScreen extends Component {
             let itemDetail = {
                 currentAmount: item.currentAmount+1
             };
-            DB.ItemList.update({alarmName: this.props.alarm.alarmName, itemName: item.itemName}, itemDetail);
+            DB.ItemList.update(itemDetail, {alarmName: this.props.alarm.alarmName, itemName: item.itemName});
         }
     }
     _deductOne(item) {
@@ -53,7 +56,7 @@ class AlarmDetailsScreen extends Component {
             let itemDetail = {
                 currentAmount: item.currentAmount-1
             };
-            DB.ItemList.update({alarmName: this.props.alarm.alarmName, itemName: item.itemName}, itemDetail);
+            DB.ItemList.update(itemDetail, {alarmName: this.props.alarm.alarmName, itemName: item.itemName});
         }
     }
     _renderItemRow(item) {
@@ -100,16 +103,20 @@ class AlarmDetailsScreen extends Component {
         }
     }
     _getAllItems() {
-        DB.ItemList.get_all((result) => {
+        DB.ItemList.find().then((result) => {
             this.setState({
-                itemDataSource: ds.cloneWithRows(result.rows)
+                itemDataSource: ds.cloneWithRows(result)
             });
+        })
+    }
+    _navigateToItemAddScreen(alarmName) {
+        this.props.navigator.push({
+            id: "ItemAdd",
+            alarmName: alarmName,
+            sceneConfig: Navigator.SceneConfigs.FloatFromBottom
         });
     }
     render() {
-        DBEvents.on("all", () => {
-            this._getAllAlarms();
-        });
         return (
             <ViewContainer style={{backgroundColor: "powderblue"}}>
                 <StatusBarBackground/>
@@ -125,12 +132,20 @@ class AlarmDetailsScreen extends Component {
                         renderRow={(item) => {return this._renderItemRow(item)}} />
                     <TouchableElement
                         style={styles.button}
+                        onPress={(event) => this._navigateToItemAddScreen(this.props.alarm.alarmName)}>
+                        <Icon name="plus" size={25} />
+                    </TouchableElement>
+                    <TouchableElement
+                        style={styles.button}
                         onPress={this._deleteAlarm}>
                         <Icon name="times" size={25} />
                     </TouchableElement>
                 </ScrollView>
             </ViewContainer>
         )
+    }
+    componentDidUpdate(prevProps, prevState) {
+        this._getAllItems();
     }
 }
 

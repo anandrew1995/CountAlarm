@@ -2,12 +2,12 @@
 import React, { Component } from 'react';
 import {
     StyleSheet,
-    Navigator,
-    Text
+    Navigator
 } from 'react-native';
 import AlarmIndexScreen from '../screens/AlarmIndexScreen'
 import AlarmDetailsScreen from '../screens/AlarmDetailsScreen'
 import AlarmCreateScreen from '../screens/AlarmCreateScreen'
+import ItemAddScreen from '../screens/ItemAddScreen'
 
 class AppNavigator extends Component {
     _renderScene(route, navigator) {
@@ -28,6 +28,11 @@ class AppNavigator extends Component {
             case "AlarmCreate":
                 return (
                     <AlarmCreateScreen {...globalNavigatorProps} />
+                )
+            case "ItemAdd":
+                return (
+                    <ItemAddScreen {...globalNavigatorProps} 
+                    alarmName={route.alarmName}/>
                 )
             default:
                 return (

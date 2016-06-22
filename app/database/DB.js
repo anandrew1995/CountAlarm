@@ -1,8 +1,8 @@
-import RNDBModel from 'react-native-db-models';
+import Store from 'react-native-store';
 
-let DB = {
-    "AlarmList": new RNDBModel.create_db('AlarmList'),
-    "ItemList": new RNDBModel.create_db('ItemList'),
-}
+const DB = {
+    'AlarmList': Store.model('AlarmList'),
+    'ItemList': Store.model('ItemList')
+};
 
 module.exports = DB

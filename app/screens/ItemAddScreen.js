@@ -12,14 +12,13 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import DB from '../database/DB';
-import { DBEvents } from 'react-native-db-models'
 
 let TouchableElement = TouchableHighlight;
 if (Platform.OS === 'android') {
 	TouchableElement = TouchableNativeFeedback;
 }
 
-class NewItem extends Component {
+class ItemAddScreen extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
@@ -31,8 +30,7 @@ class NewItem extends Component {
 			itemNameStatus: "",
 			itemTotalStatus: "",
 			autoDeductAmountStatus: "",
-			autoDeductPeriodStatus: "",
-			saveAvailableFlag: true
+			autoDeductPeriodStatus: ""
 		}
 		this._saveItemDetails = this._saveItemDetails.bind(this);
 	}
@@ -66,12 +64,8 @@ class NewItem extends Component {
 				itemNameStatus: "",
 				itemTotalStatus: "",
 				autoDeductAmountStatus: "",
-				autoDeductPeriodStatus: "",
-				saveAvailableFlag: false
+				autoDeductPeriodStatus: ""
 			});
-			this.setState({
-		    	saveAvailableFlag: true
-		    });
 		}
 	}
 	render() {
@@ -114,9 +108,11 @@ class NewItem extends Component {
 					<Picker.Item label="Hour(s)" value="hour" />
 					<Picker.Item label="Min" value="min" />
 				</Picker>
-				{this.props.saveConfirm && this.state.saveAvailableFlag ? 
-					this._saveItemDetails() : null
-				}
+				<TouchableElement
+			    	style={[styles.button, {backgroundColor: "lightgreen"}]}
+			    	onPress={this._saveItemDetails()}>
+			        <Icon name="plus" size={25}/>
+			    </TouchableElement>
 			</View>
 		)
 	}
@@ -148,4 +144,4 @@ const styles = StyleSheet.create({
   	},
 })
 
-module.exports = NewItem
+module.exports = ItemAddScreen
