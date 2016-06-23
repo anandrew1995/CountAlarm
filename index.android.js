@@ -3,47 +3,49 @@ import React, { Component } from 'react';
 import {
     AppRegistry,
     StyleSheet,
-    Text,
-    View,
-    DrawerLayoutAndroid
+    Text
 } from 'react-native';
-import AppNavigator from './app/navigation/AppNavigator'
-import Icon from 'react-native-vector-icons/FontAwesome'
+import AppNavigator from './app/navigation/AppNavigator';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 class CountAlarm extends Component {
     constructor(props) {
         super(props);
-        // this.state = {
-        //     selectedTab: "AlarmIndex"
-        // }
-        this.openDrawer = this.openDrawer.bind(this);
-    }
-    openDrawer() {
-        this.refs['DRAWER'].openDrawer()
+        this.state = {
+          selectedTab: "AlarmIndex"
+        }
     }
     render() {
-        let navigationView = (
-            <View style={{flex: 1, backgroundColor: '#fff'}}>
-                <AppNavigator initialRoute={{id: "AlarmCreate"}} />
-            </View>
-        );
         return (
-            <DrawerLayoutAndroid
-                drawerWidth={300}
-                ref={'DRAWER'}
-                drawerPosition={DrawerLayoutAndroid.positions.Left}
-                renderNavigationView={() => navigationView}>
-                <AppNavigator initialRoute={{id: "AlarmIndex"}} />
-            </DrawerLayoutAndroid>
+            <AppNavigator initialRoute={{id: "AlarmIndex"}} />
         )
+        // return (
+        //  <TabBarIOS
+        //      selectedTab={this.state.selectedTab}>
+        //      <Icon.TabBarItemIOS
+        //          selected={this.state.selectedTab === "AlarmIndex"}
+        //          title={`Alarms`}
+        //          iconName="access-alarms"
+        //          onPress={() => this.setState({selectedTab: "AlarmIndex"})}>
+        //          <AppNavigator initialRoute={{id: "AlarmIndex"}} />
+        //      </Icon.TabBarItemIOS>
+        //      <Icon.TabBarItemIOS
+        //          selected={this.state.selectedTab === "AlarmCreate"}
+        //          title={`New Alarm`}
+        //          iconName="add-alarm"
+        //          onPress={() => this.setState({selectedTab: "AlarmCreate"})}>
+        //          <AppNavigator initialRoute={{id: "AlarmCreate"}} />
+        //      </Icon.TabBarItemIOS>
+        //  </TabBarIOS>
+        // )
     }
 
 }
 
 const styles = StyleSheet.create({
-  navigatorStyles: {
+    navigatorStyles: {
 
-  }
+    }
 });
 
 AppRegistry.registerComponent('CountAlarm', () => CountAlarm);

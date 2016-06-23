@@ -7,32 +7,33 @@ import {
 	StyleSheet,
 	TouchableOpacity,
 	AsyncStorage,
-	Platform,
-    TouchableHighlight,
-    TouchableNativeFeedback,
+	Dimensions,
 	Navigator
 } from 'react-native';
 import ViewContainer from '../components/ViewContainer';
 import StatusBarBackground from '../components/StatusBarBackground';
 import _ from 'lodash';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
-let TouchableElement = TouchableHighlight;
-if (Platform.OS === 'android') {
-    TouchableElement = TouchableNativeFeedback;
-}
+let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 != r2});
+let deviceHeight = Dimensions.get('window').height;
+let deviceWidth = Dimensions.get('window').width;
 
 class AlarmIndexScreen extends Component {
 	constructor(props) {
 		super(props);
-		let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 != r2});
 		this.state = {
-			alarmDataSource: ds.cloneWithRows([])
+			alarmDataSource: ds.cloneWithRows([""]),
+			alarmCount: 0,
+			changeAvailable: true,
+			viewEdit: false
 		};
 		this._navigateToAlarmDetails = this._navigateToAlarmDetails.bind(this);
 		this._renderAlarmRow = this._renderAlarmRow.bind(this);
 		this._getAllAlarms = this._getAllAlarms.bind(this);
 		this._createAlarm = this._createAlarm.bind(this);
+		this._deleteAlarm = this._deleteAlarm.bind(this);
+		this._toggleEdit = this._toggleEdit.bind(this);
 		// AsyncStorage.clear();
 	}
   	_navigateToAlarmDetails(alarm) {
@@ -41,17 +42,28 @@ class AlarmIndexScreen extends Component {
     		alarm: alarm,
     		sceneConfig: Navigator.SceneConfigs.FloatFromBottom
     	});
+    	this.setState({
+    		changeAvailable: true
+    	});
   	}
   	_renderAlarmRow(alarm) {
   		if (alarm) {
 		    return (
-				<TouchableOpacity 
-					style={styles.alarmRow} 
-					onPress={(event) => this._navigateToAlarmDetails(alarm)}>
-					<Text style={styles.alarmName}>{`${_.capitalize(alarm.alarmName)}`}</Text>
-					<View style={{flex: 1}} />
-					<Icon name="chevron-right" size={10} style={styles.alarmDetailsIcon}/>
-				</TouchableOpacity>
+		    	<View style={{flexDirection: "row"}}>
+					<TouchableOpacity 
+						style={styles.alarmRow} 
+						onPress={(event) => this._navigateToAlarmDetails(alarm)}>
+						<Text style={styles.alarmName}>{alarm.alarmName}</Text>
+						<Icon name="navigate-next" size={10} style={styles.alarmDetailsIcon}/>
+					</TouchableOpacity>
+					{this.state.viewEdit ?
+	                    <TouchableOpacity
+	                    	style={{marginTop: deviceHeight*0.01}}
+	                        onPress={() => this._deleteAlarm(alarm)}>
+	                        <Icon name="clear" size={25} />
+	                    </TouchableOpacity>
+	                    : null}
+				</View>
 		    )
 		}
 		else {
@@ -66,22 +78,23 @@ class AlarmIndexScreen extends Component {
 					alarmKeyList.push(key[i]);
 				}
 			});
-			AsyncStorage.multiGet(alarmKeyList, (err, stores) => {
-				let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 != r2});
-				let alarmViewList = [];
-				stores.map((result, i, store) => {
-					let key = store[i][0];
-					let value = store[i][1];
-					alarmViewList.push(JSON.parse(value));
-				});
-				if (ds.cloneWithRows(alarmViewList) != this.state.alarmDataSource) {
-					if (alarmViewList.length > 0) {
+			if (this.state.changeAvailable || alarmKeyList.length != this.state.alarmCount) {
+				AsyncStorage.multiGet(alarmKeyList, (err, stores) => {
+					let alarmViewList = [];
+					stores.map((result, i, store) => {
+						let key = store[i][0];
+						let value = store[i][1];
+						alarmViewList.push(JSON.parse(value));
+					});
+					if (ds.cloneWithRows(alarmViewList) != this.state.alarmDataSource) {
 	                    this.setState({
-		                    alarmDataSource: ds.cloneWithRows(alarmViewList)
+		                    alarmDataSource: ds.cloneWithRows(alarmViewList),
+		                    alarmCount: alarmViewList.length,
+		                    changeAvailable: false
 		                });
 	                }
-                }
-			});
+				});
+			}
 		});
   	}
   	_createAlarm() {
@@ -89,7 +102,37 @@ class AlarmIndexScreen extends Component {
     		id: "AlarmCreate",
     		sceneConfig: Navigator.SceneConfigs.FloatFromBottom
     	});
+    	this.setState({
+    		changeAvailable: true
+    	});
   	}
+  	_deleteAlarm(alarm) {
+        AsyncStorage.removeItem("AlarmList."+alarm.alarmName);
+        AsyncStorage.getAllKeys((err, keys) => {
+            let itemKeyList = [];
+            keys.map((result, i, key) => {
+                if (_.startsWith(key[i], "ItemList."+alarm.alarmName)) {
+                    itemKeyList.push(key[i]);
+                }
+            });
+            AsyncStorage.multiRemove(itemKeyList);
+        });
+        this.setState({
+        	changeAvailable: true
+        })
+    }
+    _toggleEdit() {
+        if (this.state.viewEdit) {
+            this.setState({
+                viewEdit: false
+            });
+        }
+        else if (!this.state.viewEdit) {
+            this.setState({
+                viewEdit: true
+            });
+        }
+    }
   	componentDidMount() {
 		this._getAllAlarms();
   	}
@@ -97,14 +140,26 @@ class AlarmIndexScreen extends Component {
 		return (
 			<ViewContainer>
 				<StatusBarBackground/>
-				<Text style={styles.instructions}>CountAlarm</Text>
-				<TouchableElement
+				<View style={{flexDirection: "row"}}>
+					<Text style={[styles.appName, {flex: 1, marginLeft: deviceWidth*0.07}]}>CountAlarm</Text>
+					<TouchableOpacity
+	                    style={{marginTop: deviceHeight*0.01}}
+	                    onPress={() => this._toggleEdit()}>
+	                    <Icon style={{fontSize: 17, marginRight: deviceWidth*0.02}} name="edit" size={25} />
+	                </TouchableOpacity>
+                </View>
+				<Text style={[styles.instructions, {marginTop: deviceHeight*0.05}]}>Add an alarm</Text>
+				<TouchableOpacity
                     style={[styles.button, {backgroundColor: "lightgreen"}]}
-                    onPress={this._createAlarm}>
-                    <Icon name="plus" size={25} />
-                </TouchableElement>
+                    onPress={() => this._createAlarm()}>
+                    <Icon name="add-alarm" size={25} />
+                </TouchableOpacity>
+                {this.state.alarmCount === 0 ?
+                	<Text style={[styles.instructions, {marginTop: deviceHeight*0.3}]}>You have no alarms.</Text>
+					: null
+				}
 				<ListView 
-					style={{marginTop: 50}}
+					style={{marginTop: deviceHeight*0.03}}
 					dataSource={this.state.alarmDataSource}
 					enableEmptySections={true}
 					renderRow={(alarm) => {return this._renderAlarmRow(alarm)}} />
@@ -112,37 +167,41 @@ class AlarmIndexScreen extends Component {
 		)
   	}
   	componentDidUpdate() {
-        this._getAllAlarms();
+  		this._getAllAlarms();
     }
 }
 
 const styles = StyleSheet.create({
+	appName: {
+        fontSize: 20,
+        textAlign: "center"
+	},
 	instructions: {
   		textAlign: "center",
   		color: '#333333',
-  		marginBottom: 5,
-  		marginTop: 5
+  		marginBottom: deviceHeight*0.01,
+  		marginTop: deviceHeight*0.01
   	},
 	alarmRow: {
 		flexDirection: "row",
 		justifyContent: "flex-start",
 		alignItems: "center",
-		height: 50
+		height: deviceHeight*0.065
 	},
 	alarmName: {
-		marginLeft: 25
+		marginLeft: deviceWidth*0.07,
+		width: deviceWidth*0.8
 	},
 	alarmDetailsIcon: {
 		color: "green",
-		height: 20,
-		width: 20,
-		marginRight: 25
+		marginTop: deviceHeight*0.03,
+		height: deviceHeight*0.05,
+		width: deviceHeight*0.02,
 	},
 	button: {
-        marginTop: 40,
         justifyContent: 'center',
         alignItems: 'center',
-        height: 30
+        height: deviceHeight*0.04
     },
 });
 

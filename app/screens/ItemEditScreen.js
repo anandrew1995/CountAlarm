@@ -21,21 +21,34 @@ Platform.OS === 'android' ? android = 2 : android = 1;
 let deviceHeight = Dimensions.get('window').height;
 let deviceWidth = Dimensions.get('window').width;
 
-class ItemAddScreen extends Component {
+class ItemEditScreen extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			itemName: "",
-			itemTotal: "",
-			autoDeductAmount: "",
-			autoDeductPeriod: "",
-			autoDeductPeriodUnit: "day",
+			itemName: this.props.item.itemName,
+			itemTotal: this.props.item.itemTotal,
+			autoDeductAmount: this.props.item.autoDeductAmount,
+			autoDeductPeriod: this.props.item.autoDeductPeriod,
+			autoDeductPeriodUnit: this.props.item.autoDeductPeriodUnit,
+			currentAmount: this.props.item.currentAmount,
 			itemNameStatus: "",
 			itemTotalStatus: "",
 			autoDeductAmountStatus: "",
 			autoDeductPeriodStatus: ""
 		}
 		this._saveItemDetails = this._saveItemDetails.bind(this);
+	}
+	_noEdit() {
+		let itemDetail = {
+			itemName: this.props.item.itemName,
+			itemTotal: this.props.item.itemTotal,
+			autoDeductAmount: this.props.item.autoDeductAmount,
+			autoDeductPeriod: this.props.item.autoDeductPeriod,
+			autoDeductPeriodUnit: this.props.item.autoDeductPeriodUnit,
+			currentAmount: this.props.item.currentAmount
+		};
+		AsyncStorage.setItem("ItemList."+this.props.alarm.alarmName+"."+itemDetail.itemName, JSON.stringify(itemDetail));
+		this.props.navigator.pop();
 	}
 	_saveItemDetails() {
 		AsyncStorage.getItem("ItemList."+this.props.alarm.alarmName+"."+this.state.itemName).then((value) => {
@@ -113,7 +126,7 @@ class ItemAddScreen extends Component {
 					autoDeductAmount: this.state.autoDeductAmount,
 					autoDeductPeriod: this.state.autoDeductPeriod,
 					autoDeductPeriodUnit: this.state.autoDeductPeriodUnit,
-					currentAmount: this.state.itemTotal
+					currentAmount: this.state.currentAmount
 				};
 				AsyncStorage.setItem("ItemList."+this.props.alarm.alarmName+"."+this.state.itemName, JSON.stringify(itemDetail));
 				this.setState({
@@ -136,7 +149,7 @@ class ItemAddScreen extends Component {
 				<StatusBarBackground/>
 				<ScrollView>
 					<TouchableOpacity
-                        onPress={() => this.props.navigator.pop()}>
+                        onPress={() => this._noEdit()}>
                         <Icon name="navigate-before" size={30} />
                     </TouchableOpacity>
 					<Text style={styles.instructions}>Item Name</Text>
@@ -209,4 +222,4 @@ const styles = StyleSheet.create({
   	},
 })
 
-module.exports = ItemAddScreen
+module.exports = ItemEditScreen

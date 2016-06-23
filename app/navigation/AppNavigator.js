@@ -9,6 +9,7 @@ import AlarmIndexScreen from '../screens/AlarmIndexScreen'
 import AlarmDetailsScreen from '../screens/AlarmDetailsScreen'
 import AlarmCreateScreen from '../screens/AlarmCreateScreen'
 import ItemAddScreen from '../screens/ItemAddScreen'
+import ItemEditScreen from '../screens/ItemEditScreen'
 
 class AppNavigator extends Component {
     _renderScene(route, navigator) {
@@ -33,6 +34,12 @@ class AppNavigator extends Component {
                 return (
                     <ItemAddScreen {...globalNavigatorProps} 
                     alarm={route.alarm} />
+                )
+            case "ItemEdit":
+                return (
+                    <ItemEditScreen {...globalNavigatorProps} 
+                    alarm={route.alarm}
+                    item={route.item} />
                 )
             default:
                 return (

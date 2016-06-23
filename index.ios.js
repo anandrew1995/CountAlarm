@@ -6,8 +6,8 @@ import {
   	Text,
   	TabBarIOS
 } from 'react-native';
-import AppNavigator from './app/navigation/AppNavigator'
-import Icon from 'react-native-vector-icons/FontAwesome'
+import AppNavigator from './app/navigation/AppNavigator';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 class CountAlarm extends Component {
 	constructor(props) {
@@ -18,24 +18,27 @@ class CountAlarm extends Component {
 	}
 	render() {
 		return (
-			<TabBarIOS
-				selectedTab={this.state.selectedTab}>
-				<Icon.TabBarItemIOS
-					selected={this.state.selectedTab === "AlarmIndex"}
-					title={`Alarms`}
-					iconName="clock-o"
-					onPress={() => this.setState({selectedTab: "AlarmIndex"})}>
-					<AppNavigator initialRoute={{id: "AlarmIndex"}} />
-				</Icon.TabBarItemIOS>
-				<Icon.TabBarItemIOS
-					selected={this.state.selectedTab === "AlarmCreate"}
-					title={`New Alarm`}
-					iconName="plus"
-					onPress={() => this.setState({selectedTab: "AlarmCreate"})}>
-					<AppNavigator initialRoute={{id: "AlarmCreate"}} />
-				</Icon.TabBarItemIOS>
-			</TabBarIOS>
+			<AppNavigator initialRoute={{id: "AlarmIndex"}} />
 		)
+		// return (
+		// 	<TabBarIOS
+		// 		selectedTab={this.state.selectedTab}>
+		// 		<Icon.TabBarItemIOS
+		// 			selected={this.state.selectedTab === "AlarmIndex"}
+		// 			title={`Alarms`}
+		// 			iconName="access-alarms"
+		// 			onPress={() => this.setState({selectedTab: "AlarmIndex"})}>
+		// 			<AppNavigator initialRoute={{id: "AlarmIndex"}} />
+		// 		</Icon.TabBarItemIOS>
+		// 		<Icon.TabBarItemIOS
+		// 			selected={this.state.selectedTab === "AlarmCreate"}
+		// 			title={`New Alarm`}
+		// 			iconName="add-alarm"
+		// 			onPress={() => this.setState({selectedTab: "AlarmCreate"})}>
+		// 			<AppNavigator initialRoute={{id: "AlarmCreate"}} />
+		// 		</Icon.TabBarItemIOS>
+		// 	</TabBarIOS>
+		// )
 	}
 
 }

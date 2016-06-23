@@ -6,22 +6,21 @@ import {
 	StyleSheet,
 	AsyncStorage,
 	TextInput,
-	Picker,
 	Platform,
-	TouchableHighlight,
-	TouchableNativeFeedback,
+	Dimensions,
+	Picker,
 	TouchableOpacity,
 	ScrollView
 } from 'react-native';
 import ViewContainer from '../components/ViewContainer';
 import StatusBarBackground from '../components/StatusBarBackground';
 import _ from 'lodash';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
-let TouchableElement = TouchableHighlight;
-if (Platform.OS === 'android') {
-	TouchableElement = TouchableNativeFeedback;
-}
+let android;
+Platform.OS === 'android' ? android = 2 : android = 1;
+let deviceHeight = Dimensions.get('window').height;
+let deviceWidth = Dimensions.get('window').width;
 
 class AlarmCreateScreen extends Component {
 	constructor(props) {
@@ -65,11 +64,9 @@ class AlarmCreateScreen extends Component {
 				<ScrollView>
 					<TouchableOpacity
                         onPress={() => this.props.navigator.pop()}>
-                        <Icon name="chevron-left" size={30} />
+                        <Icon name="navigate-before" size={30} />
                     </TouchableOpacity>
-					<Text style={styles.instructions}>
-						Alarm Name
-					</Text>
+					<Text style={styles.instructions}>Alarm Name</Text>
 					<TextInput
 						autoCapitalize="sentences"
 						style={styles.formInput} 
@@ -78,11 +75,11 @@ class AlarmCreateScreen extends Component {
 					<Text>{this.state.alarmNameStatus}</Text>
 					<Text style={styles.instructions}>Add Items within the alarm.</Text>
 				    <Text style={styles.instructions}>Notify when any item reaches</Text>
-					<TouchableElement
+					<TouchableOpacity
 				    	style={[styles.button, {backgroundColor: "lightgreen"}]}
-				    	onPress={this._saveAlarm}>
-				        <Icon name="check" size={25}/>
-				    </TouchableElement>
+				    	onPress={() => this._saveAlarm()}>
+				        <Icon name="done" size={25}/>
+				    </TouchableOpacity>
 			    </ScrollView>
 		    </ViewContainer>
 		)
@@ -90,35 +87,24 @@ class AlarmCreateScreen extends Component {
 }
 
 const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		padding: 30,
-		justifyContent: 'center',
-		alignItems: 'stretch',
-	},
 	formInput: {
-		flex: 1,
-		height: 20,
-		fontSize: 13,
-		borderWidth: 1,
-		borderColor: "grey"
-	},
+	  	flex: 1,
+	  	height: deviceHeight*0.03*android,
+	  	fontSize: 13,
+	  	borderWidth: 1,
+	  	borderColor: "grey"
+  	},
 	instructions: {
-		textAlign: "center",
-		color: '#333333',
-		marginBottom: 5,
-		marginTop: 5
-	},
-	saved: {
-		fontSize: 20,
-		textAlign: 'center',
-		margin: 10
-	},
+        textAlign: "center",
+        color: '#333333',
+        marginBottom: deviceHeight*0.01,
+        marginTop: deviceHeight*0.01
+    },
 	button: {
-		justifyContent: 'center',
-		alignItems: 'center',
-		height: 30
-	},
+  		justifyContent: 'center',
+  		alignItems: 'center',
+  		height: deviceHeight*0.04
+  	}
 });
 
 module.exports = AlarmCreateScreen
