@@ -12,6 +12,7 @@ import {
     Dimensions,
     Navigator
 } from 'react-native';
+
 import ViewContainer from '../components/ViewContainer';
 import StatusBarBackground from '../components/StatusBarBackground';
 import _ from 'lodash';
@@ -161,7 +162,6 @@ class AlarmDetailsScreen extends Component {
                 AsyncStorage.multiGet(itemKeyList, (err, stores) => {
                     let itemViewList = [];
                     stores.map((result, i, store) => {
-                        console.log(store)
                         let key = store[i][0];
                         let value = store[i][1];
                         itemViewList.push(JSON.parse(value));
@@ -218,7 +218,7 @@ class AlarmDetailsScreen extends Component {
                     <Text style={styles.alarmName}>{this.props.alarm.alarmName}</Text>
                     <Text style={[styles.instructions, {marginTop: deviceHeight*0.03}]}>Add an Item</Text>
                     <TouchableOpacity
-                        style={[styles.button, {backgroundColor: "lightgreen"}]}
+                        style={[styles.button, {backgroundColor: "lightgreen", marginTop: 0}]}
                         onPress={(event) => this._navigateToItemAddScreen(this.props.alarm)}>
                         <Icon name="file-upload" size={25} />
                     </TouchableOpacity>
