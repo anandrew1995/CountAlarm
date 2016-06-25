@@ -27,12 +27,19 @@ class AlarmCreateScreen extends Component {
 		super(props);
 		this.state = {
 			alarmName: "",
+			notifyAmount: "",
+			alarmNameStatus: "",
+			notifyAmountStatus: "",
 			itemCreateViewList: []
 		};
 		this._saveAlarm = this._saveAlarm.bind(this);
 	}
 	_saveAlarm() {
 	    AsyncStorage.getItem("AlarmList."+this.state.alarmName).then((value) => {
+	    	this.setState({
+				alarmNameStatus: "",
+				notifyAmountStatus: ""
+			});
 	    	if (this.state.alarmName === "") {
 				this.setState({
 					alarmNameStatus: "Please enter a name."
@@ -43,15 +50,29 @@ class AlarmCreateScreen extends Component {
 					alarmNameStatus: "This name already exists."
 				});
 			}
-			else {
+			if (this.state.notifyAmount != "") {
+	    		if (!(this.state.notifyAmount > 0)) {
+					this.setState({
+						notifyAmountStatus: "You must enter a number."
+					});
+				}
+				else {
+					this.setState({
+						notifyAmountStatus: ""
+					});
+				}
+	    	}
+			if (this.state.alarmNameStatus === "" && this.state.notifyAmountStatus === ""){
 				let alarmDetail = {
-					alarmName: this.state.alarmName
+					alarmName: this.state.alarmName,
+					notifyAmount: this.state.notifyAmount
 				};
 				AsyncStorage.setItem("AlarmList."+alarmDetail.alarmName, JSON.stringify(alarmDetail));
 				this.setState({
+					alarmName: "",
+					notifyAmount: "",
 					alarmNameStatus: "",
-					alarmNameValue: this.state.alarmName,
-					alarmName: ""
+					notifyAmountStatus: ""
 				});
 				this.props.navigator.pop();
 			}
@@ -75,6 +96,12 @@ class AlarmCreateScreen extends Component {
 					<Text>{this.state.alarmNameStatus}</Text>
 					<Text style={styles.instructions}>Add Items within the alarm.</Text>
 				    <Text style={styles.instructions}>Notify when any item reaches</Text>
+				    <TextInput
+						autoCapitalize="sentences"
+						style={styles.formInput} 
+						value={this.state.notifyAmount}
+						onChangeText={(amount) => this.setState({notifyAmount: amount})}/>
+					<Text>{this.state.notifyAmountStatus}</Text>
 					<TouchableOpacity
 				    	style={[styles.button, {backgroundColor: "lightgreen"}]}
 				    	onPress={() => this._saveAlarm()}>

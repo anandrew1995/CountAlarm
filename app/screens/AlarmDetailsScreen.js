@@ -10,7 +10,8 @@ import {
     AsyncStorage,
     ScrollView,
     Dimensions,
-    Navigator
+    Navigator,
+    Alert
 } from 'react-native';
 
 import ViewContainer from '../components/ViewContainer';
@@ -36,9 +37,12 @@ class AlarmDetailsScreen extends Component {
         this._deductOne = this._deductOne.bind(this);
         this._renderItemRow = this._renderItemRow.bind(this);
         this._getAllItems = this._getAllItems.bind(this);
+        this._navigateToItemEditScreen = this._navigateToItemEditScreen.bind(this);
         this._navigateToItemAddScreen = this._navigateToItemAddScreen.bind(this);
         this._editItem = this._editItem.bind(this);
         this._deleteItem = this._deleteItem.bind(this);
+        this._resetCount = this._resetCount.bind(this);
+        this._confirmDelete = this._confirmDelete.bind(this);
         this._toggleEdit = this._toggleEdit.bind(this);
     }
     _addOne(item) {
@@ -81,6 +85,16 @@ class AlarmDetailsScreen extends Component {
             changeAvailable: true
         });
     }
+    _confirmDelete(item) {
+        Alert.alert(
+          'Deleting Item',
+          'Are you sure?',
+          [
+            {text: 'Yes', onPress: () => this._deleteItem(item)},
+            {text: 'No'},
+          ]
+        );
+    }
     _resetCount(item) {
         let itemDetail = {
             currentAmount: item.itemTotal
@@ -103,7 +117,7 @@ class AlarmDetailsScreen extends Component {
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={{marginLeft: deviceWidth*0.01}}
-                            onPress={() => this._deleteItem(item)}>
+                            onPress={() => this._confirmDelete(item)}>
                             <Icon name="clear" size={25} />
                         </TouchableOpacity>
                     </View>
@@ -216,6 +230,7 @@ class AlarmDetailsScreen extends Component {
                         </TouchableOpacity>
                     </View>
                     <Text style={styles.alarmName}>{this.props.alarm.alarmName}</Text>
+                    <Text style={styles.instructions}>{`Notifying when < ${this.props.alarm.notifyAmount} items`}</Text>
                     <Text style={[styles.instructions, {marginTop: deviceHeight*0.03}]}>Add an Item</Text>
                     <TouchableOpacity
                         style={[styles.button, {backgroundColor: "lightgreen", marginTop: 0}]}

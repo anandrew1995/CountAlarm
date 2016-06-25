@@ -8,7 +8,8 @@ import {
 	TouchableOpacity,
 	AsyncStorage,
 	Dimensions,
-	Navigator
+	Navigator,
+	Alert
 } from 'react-native';
 import ViewContainer from '../components/ViewContainer';
 import StatusBarBackground from '../components/StatusBarBackground';
@@ -33,6 +34,7 @@ class AlarmIndexScreen extends Component {
 		this._getAllAlarms = this._getAllAlarms.bind(this);
 		this._createAlarm = this._createAlarm.bind(this);
 		this._deleteAlarm = this._deleteAlarm.bind(this);
+		this._confirmDelete = this._confirmDelete.bind(this);
 		this._toggleEdit = this._toggleEdit.bind(this);
 		// AsyncStorage.clear();
 	}
@@ -59,7 +61,7 @@ class AlarmIndexScreen extends Component {
 					{this.state.viewEdit ?
 	                    <TouchableOpacity
 	                    	style={{marginTop: deviceHeight*0.01}}
-	                        onPress={() => this._deleteAlarm(alarm)}>
+	                        onPress={() => this._confirmDelete(alarm)}>
 	                        <Icon name="clear" size={25} />
 	                    </TouchableOpacity>
 	                    : null}
@@ -120,6 +122,16 @@ class AlarmIndexScreen extends Component {
         this.setState({
         	changeAvailable: true
         })
+    }
+    _confirmDelete(alarm) {
+    	Alert.alert(
+		  'Deleting Alarm',
+		  'Are you sure?',
+		  [
+		    {text: 'Yes', onPress: () => this._deleteAlarm(alarm)},
+		    {text: 'No'},
+		  ]
+		);
     }
     _toggleEdit() {
         if (this.state.viewEdit) {
