@@ -9,12 +9,15 @@ import {
 	AsyncStorage,
 	Dimensions,
 	Navigator,
-	Alert
+	Alert,
+	DeviceEventEmitter
 } from 'react-native';
 import ViewContainer from '../components/ViewContainer';
 import StatusBarBackground from '../components/StatusBarBackground';
 import _ from 'lodash';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import BackgroundTimer from 'react-native-background-timer';
+import moment from 'moment';
 
 let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 != r2});
 let deviceHeight = Dimensions.get('window').height;
@@ -36,6 +39,9 @@ class AlarmIndexScreen extends Component {
 		this._deleteAlarm = this._deleteAlarm.bind(this);
 		this._confirmDelete = this._confirmDelete.bind(this);
 		this._toggleEdit = this._toggleEdit.bind(this);
+		this._startOffsetTimer = this._startOffsetTimer.bind(this);
+		this._startDailyTimer = this._startDailyTimer.bind(this);
+		this._reduceAutoItems = this._reduceAutoItems.bind(this);
 		// AsyncStorage.clear();
 	}
   	_navigateToAlarmDetails(alarm) {
@@ -145,8 +151,52 @@ class AlarmIndexScreen extends Component {
             });
         }
     }
+    _reduceAutoItems() {
+    	AsyncStorage.getAllKeys((err, keys) => {
+            let itemKeyList = []
+            keys.map((result, i, key) => {
+                if (_.startsWith(key[i], "ItemList.")) {
+                    itemKeyList.push(key[i]);
+                }
+            });
+            AsyncStorage.multiGet(itemKeyList, (err, stores) => {
+                let itemViewList = [];
+                stores.map((result, i, store) => {
+                    let key = store[i][0];
+                    let value = store[i][1];
+                    if (value.autoDeductAmount > 0) {
+                    	let itemDetail = {
+                    		currentAmount: value.currentAmount - value.autoDeductAmount
+                    	};
+                    	AsyncStorage.mergeItem(key, itemDetail);
+                    }
+                });
+            });
+        });
+    }
+    _startDailyTimer() {
+    	BackgroundTimer.stop();
+    	BackgroundTimer.start(86400000);
+    	DeviceEventEmitter.addListener('backgroundTimer', () => {
+			this._reduceAutoItems();
+		});
+    }
+    _startOffsetTimer() {
+		AsyncStorage.getItem("Timer").then((value) => {
+			if (value === null || value === false) {
+				let now = new Date();
+				let offset = moment().endOf('day')-now;
+				BackgroundTimer.start(offset);
+				DeviceEventEmitter.addListener('backgroundTimer', () => {
+					this._startDailyTimer();
+				});
+				AsyncStorage.setItem("Timer", true);
+			}
+		});
+    }
   	componentDidMount() {
 		this._getAllAlarms();
+		this._startOffsetTimer();
   	}
   	render() {
 		return (
