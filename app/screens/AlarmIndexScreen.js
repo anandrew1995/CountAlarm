@@ -176,21 +176,23 @@ class AlarmIndexScreen extends Component {
     }
     _startDailyTimer() {
     	BackgroundTimer.stop();
-    	BackgroundTimer.start(86400000);
+    	this._reduceAutoItems();
+    	//86400000
+    	BackgroundTimer.start(3000);
     	DeviceEventEmitter.addListener('backgroundTimer', () => {
 			this._reduceAutoItems();
 		});
     }
     _startOffsetTimer() {
 		AsyncStorage.getItem("Timer").then((value) => {
-			if (value === null || value === false) {
+			if (value === null || value === 'false') {
 				let now = new Date();
 				let offset = moment().endOf('day')-now;
 				BackgroundTimer.start(offset);
 				DeviceEventEmitter.addListener('backgroundTimer', () => {
 					this._startDailyTimer();
 				});
-				AsyncStorage.setItem("Timer", true);
+				AsyncStorage.setItem("Timer", 'true');
 			}
 		});
     }
