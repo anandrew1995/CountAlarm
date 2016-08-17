@@ -50,18 +50,16 @@ class AlarmCreateScreen extends Component {
 					alarmNameStatus: "This name already exists."
 				});
 			}
-			if (this.state.notifyAmount != "") {
-	    		if (!(this.state.notifyAmount > 0)) {
-					this.setState({
-						notifyAmountStatus: "You must enter a number."
-					});
-				}
-				else {
-					this.setState({
-						notifyAmountStatus: ""
-					});
-				}
-	    	}
+    		if (!(this.state.notifyAmount >= 0)) {
+				this.setState({
+					notifyAmountStatus: "You must enter a number."
+				});
+			}
+			else {
+				this.setState({
+					notifyAmountStatus: ""
+				});
+			}
 			if (this.state.alarmNameStatus === "" && this.state.notifyAmountStatus === ""){
 				let alarmDetail = {
 					alarmName: this.state.alarmName,
@@ -81,7 +79,9 @@ class AlarmCreateScreen extends Component {
 	render() {
 		return (
 			<ViewContainer>
-				<StatusBarBackground/>
+				{Platform.OS === 'android' ? null :
+					<StatusBarBackground/>
+				}
 				<ScrollView>
 					<TouchableOpacity
                         onPress={() => this.props.navigator.pop()}>

@@ -133,7 +133,9 @@ class ItemAddScreen extends Component {
 	render() {
 		return (
 			<ViewContainer>
-				<StatusBarBackground/>
+				{Platform.OS === 'android' ? null :
+					<StatusBarBackground/>
+				}
 				<ScrollView>
 					<TouchableOpacity
                         onPress={() => this.props.navigator.pop()}>

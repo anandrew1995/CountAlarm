@@ -146,7 +146,9 @@ class ItemEditScreen extends Component {
 	render() {
 		return (
 			<ViewContainer>
-				<StatusBarBackground/>
+				{Platform.OS === 'android' ? null :
+					<StatusBarBackground/>
+				}
 				<ScrollView>
 					<TouchableOpacity
                         onPress={() => this._noEdit()}>

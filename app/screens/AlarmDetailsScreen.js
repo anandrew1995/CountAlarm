@@ -11,7 +11,8 @@ import {
     ScrollView,
     Dimensions,
     Navigator,
-    Alert
+    Alert,
+    Platform
 } from 'react-native';
 
 import ViewContainer from '../components/ViewContainer';
@@ -216,7 +217,9 @@ class AlarmDetailsScreen extends Component {
     render() {
         return (
             <ViewContainer style={{backgroundColor: "powderblue"}}>
-                <StatusBarBackground/>
+                {Platform.OS === 'android' ? null :
+                    <StatusBarBackground/>
+                }
                 <ScrollView>
                     <View style={{flexDirection: "row"}}>
                         <TouchableOpacity

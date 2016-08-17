@@ -10,14 +10,18 @@ import {
 	Dimensions,
 	Navigator,
 	Alert,
-	DeviceEventEmitter
+	DeviceEventEmitter,
+	Platform
 } from 'react-native';
 import ViewContainer from '../components/ViewContainer';
 import StatusBarBackground from '../components/StatusBarBackground';
 import _ from 'lodash';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import CountAlarmBackgroundTimer from '../nativeModules/CountAlarmBackgroundTimer';
 // import BackgroundTimer from 'react-native-background-timer';
 // import moment from 'moment';
+
+// let CountAlarmBackgroundTimer = NativeModules.CountAlarmBackgroundTimer;
 
 let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 != r2});
 let deviceHeight = Dimensions.get('window').height;
@@ -151,29 +155,29 @@ class AlarmIndexScreen extends Component {
             });
         }
     }
-    // _reduceAutoItems() {
-    // 	AsyncStorage.getAllKeys((err, keys) => {
-    //         let itemKeyList = []
-    //         keys.map((result, i, key) => {
-    //             if (_.startsWith(key[i], "ItemList.")) {
-    //                 itemKeyList.push(key[i]);
-    //             }
-    //         });
-    //         AsyncStorage.multiGet(itemKeyList, (err, stores) => {
-    //             let itemViewList = [];
-    //             stores.map((result, i, store) => {
-    //                 let key = store[i][0];
-    //                 let value = store[i][1];
-    //                 if (value.autoDeductAmount > 0) {
-    //                 	let itemDetail = {
-    //                 		currentAmount: value.currentAmount - value.autoDeductAmount
-    //                 	};
-    //                 	AsyncStorage.mergeItem(key, itemDetail);
-    //                 }
-    //             });
-    //         });
-    //     });
-    }
+  //   _reduceAutoItems() {
+  //   	AsyncStorage.getAllKeys((err, keys) => {
+  //           let itemKeyList = []
+  //           keys.map((result, i, key) => {
+  //               if (_.startsWith(key[i], "ItemList.")) {
+  //                   itemKeyList.push(key[i]);
+  //               }
+  //           });
+  //           AsyncStorage.multiGet(itemKeyList, (err, stores) => {
+  //               let itemViewList = [];
+  //               stores.map((result, i, store) => {
+  //                   let key = store[i][0];
+  //                   let value = store[i][1];
+  //                   if (value.autoDeductAmount > 0) {
+  //                   	let itemDetail = {
+  //                   		currentAmount: value.currentAmount - value.autoDeductAmount
+  //                   	};
+  //                   	AsyncStorage.mergeItem(key, itemDetail);
+  //                   }
+  //               });
+  //           });
+  //       });
+  //   }
   //   _startDailyTimer() {
   //   	BackgroundTimer.stop();
   //   	this._reduceAutoItems();
@@ -198,12 +202,16 @@ class AlarmIndexScreen extends Component {
   //   }
   	componentDidMount() {
 		this._getAllAlarms();
+		console.log(CountAlarmBackgroundTimer);
+		CountAlarmBackgroundTimer.show('aa', 2000);
 		// this._startOffsetTimer();
   	}
   	render() {
 		return (
 			<ViewContainer>
-				<StatusBarBackground/>
+				{Platform.OS === 'android' ? null :
+					<StatusBarBackground/>
+				}
 				<View style={{flexDirection: "row"}}>
 					<Text style={[styles.appName, {flex: 1, marginLeft: deviceWidth*0.07}]}>CountAlarm</Text>
 					<TouchableOpacity
