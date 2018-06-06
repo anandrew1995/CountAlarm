@@ -17,11 +17,6 @@ import ViewContainer from '../components/ViewContainer';
 import StatusBarBackground from '../components/StatusBarBackground';
 import _ from 'lodash';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import CountAlarmBackgroundTimer from '../nativeModules/CountAlarmBackgroundTimer';
-// import BackgroundTimer from 'react-native-background-timer';
-// import moment from 'moment';
-
-// let CountAlarmBackgroundTimer = NativeModules.CountAlarmBackgroundTimer;
 
 let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 != r2});
 let deviceHeight = Dimensions.get('window').height;
@@ -62,8 +57,8 @@ class AlarmIndexScreen extends Component {
   		if (alarm) {
 		    return (
 		    	<View style={{flexDirection: "row"}}>
-					<TouchableOpacity 
-						style={styles.alarmRow} 
+					<TouchableOpacity
+						style={styles.alarmRow}
 						onPress={(event) => this._navigateToAlarmDetails(alarm)}>
 						<Text style={styles.alarmName}>{alarm.alarmName}</Text>
 						<Icon name="navigate-next" size={10} style={styles.alarmDetailsIcon}/>
@@ -202,9 +197,6 @@ class AlarmIndexScreen extends Component {
   //   }
   	componentDidMount() {
 		this._getAllAlarms();
-		console.log(CountAlarmBackgroundTimer);
-		CountAlarmBackgroundTimer.show('aa', 2000);
-		// this._startOffsetTimer();
   	}
   	render() {
 		return (
@@ -226,11 +218,16 @@ class AlarmIndexScreen extends Component {
                     onPress={() => this._createAlarm()}>
                     <Icon name="add-alarm" size={25} />
                 </TouchableOpacity>
+				<TouchableOpacity
+                    style={[styles.button, {backgroundColor: "lightgreen"}]}
+                    onPress={() => this._createAlarm()}>
+                    <Icon name="add-alarm" size={25} />
+                </TouchableOpacity>
                 {this.state.alarmCount === 0 ?
                 	<Text style={[styles.instructions, {marginTop: deviceHeight*0.3}]}>You have no alarms.</Text>
 					: null
 				}
-				<ListView 
+				<ListView
 					style={{marginTop: deviceHeight*0.03}}
 					dataSource={this.state.alarmDataSource}
 					enableEmptySections={true}

@@ -15,6 +15,7 @@ import {
 import ViewContainer from '../components/ViewContainer';
 import StatusBarBackground from '../components/StatusBarBackground';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import moment from 'moment';
 
 let android;
 Platform.OS === 'android' ? android = 2 : android = 1;
@@ -27,11 +28,13 @@ class ItemAddScreen extends Component {
 		this.state = {
 			itemName: "",
 			itemTotal: "",
+			notifyAmount: "",
 			autoDeductAmount: "",
 			autoDeductPeriod: "",
 			autoDeductPeriodUnit: "day",
 			itemNameStatus: "",
 			itemTotalStatus: "",
+			notifyAmountStatus: "",
 			autoDeductAmountStatus: "",
 			autoDeductPeriodStatus: ""
 		}
@@ -107,22 +110,56 @@ class ItemAddScreen extends Component {
 				this.state.itemTotalStatus === "" && 
 				this.state.autoDeductAmountStatus === "" && 
 				this.state.autoDeductPeriodStatus === "") {
+				let autoDeductCounter = 0;
+				if (this.state.autoDeductPeriodUnit === "day") {
+					autoDeductCounter = this.state.autoDeductPeriod;
+				}
+				else if (this.state.autoDeductPeriodUnit === "week") {
+					autoDeductCounter = this.state.autoDeductPeriod * 7;
+				}
+				else if (this.state.autoDeductPeriodUnit === "month") {
+					let month = moment().month();
+					let year = moment().year();
+					let febDays = 28;
+					if (year % 4 != 0) {
+						febDays = 28;
+					}
+					else if (year % 100 != 0) {
+						febDays = 29;
+					}
+					else if (year % 400 != 0) {
+						febDays = 28;
+					}
+					else {
+						febDays = 29;
+					}
+					let monthArray = [31, febDays, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+					let monthIndex = 0;
+					for (let i = 0; i < this.state.autoDeductPeriod; i++) {
+						monthIndex = (month+i) % 12;
+						autoDeductCounter += monthArray[month+i];
+					}
+				}
 				let itemDetail = {
 					itemName: this.state.itemName,
 					itemTotal: this.state.itemTotal,
+					notifyAmount: this.state.notifyAmount || "0",
 					autoDeductAmount: this.state.autoDeductAmount,
 					autoDeductPeriod: this.state.autoDeductPeriod,
 					autoDeductPeriodUnit: this.state.autoDeductPeriodUnit,
+					autoDeductCounter: autoDeductCounter,
 					currentAmount: this.state.itemTotal
 				};
 				AsyncStorage.setItem("ItemList."+this.props.alarm.alarmName+"."+this.state.itemName, JSON.stringify(itemDetail));
 				this.setState({
 					itemName: "",
 					itemTotal: "",
+					notifyAmount: "",
 					autoDeductAmount: "",
 					autoDeductPeriod: "",
 					itemNameStatus: "",
 					itemTotalStatus: "",
+					notifyAmountStatus: "",
 					autoDeductAmountStatus: "",
 					autoDeductPeriodStatus: ""
 				});
@@ -136,7 +173,9 @@ class ItemAddScreen extends Component {
 				{Platform.OS === 'android' ? null :
 					<StatusBarBackground/>
 				}
-				<ScrollView>
+				<ScrollView 
+					keyboardDismissMode='on-drag'
+   					keyboardShouldPersistTaps={true}>
 					<TouchableOpacity
                         onPress={() => this.props.navigator.pop()}>
                         <Icon name="navigate-before" size={30} />
@@ -146,7 +185,7 @@ class ItemAddScreen extends Component {
 						autoCapitalize="sentences"
 						style={styles.formInput} 
 						value={this.state.itemName}
-						placeholder="Enter a name for this alarm. (Required)"
+						placeholder="Enter a name for this item. (Required)"
 						onChangeText={(name) => this.setState({itemName: name})} />
 					<Text>{this.state.itemNameStatus}</Text>
 					<Text style={styles.instructions}>Item Amount</Text>
@@ -156,6 +195,13 @@ class ItemAddScreen extends Component {
 						placeholder="Enter how many you have in total. (Required)"
 						onChangeText={(total) => this.setState({itemTotal: total})} />
 					<Text>{this.state.itemTotalStatus}</Text>
+					<Text style={styles.instructions}>Notify Amount</Text>
+				    <TextInput
+						style={styles.formInput} 
+						value={this.state.notifyAmount}
+						placeholder="Notify when certain amount left. (Default: 0)"
+						onChangeText={(amount) => this.setState({notifyAmount: amount})}/>
+					<Text>{this.state.notifyAmountStatus}</Text>
 					<Text style={styles.instructions}>Auto Deduct</Text>
 					<TextInput
 						style={styles.formInput} 
@@ -173,11 +219,9 @@ class ItemAddScreen extends Component {
 					<Picker
 						selectedValue={this.state.autoDeductPeriodUnit}
 						onValueChange={(unit) => this.setState({autoDeductPeriodUnit: unit})}>
-						<Picker.Item label="Month(s)" value="month" />
+						<Picker.Item label="Month(s) (same day of the month)" value="month" />
 						<Picker.Item label="Week(s)" value="week" />
 						<Picker.Item label="Day(s)" value="day" />
-						<Picker.Item label="Hour(s)" value="hour" />
-						<Picker.Item label="Min" value="min" />
 					</Picker>
 					<TouchableOpacity
                         style={[styles.button, {backgroundColor: "lightgreen"}]}
@@ -202,7 +246,8 @@ const styles = StyleSheet.create({
 	  	height: deviceHeight*0.03*android,
 	  	fontSize: 13,
 	  	borderWidth: 1,
-	  	borderColor: "grey"
+	  	borderColor: "grey",
+	  	textAlign: "center"
   	},
   	button: {
   		justifyContent: 'center',

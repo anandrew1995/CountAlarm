@@ -6,11 +6,10 @@
     "start": "node node_modules/react-native/local-cli/cli.js start"
   },
   "dependencies": {
-    "lodash": "^4.13.1",
-    "moment": "^2.13.0",
-    "react": "^15.1.0",
-    "react-native": "^0.28.0",
-    "react-native-background-timer": "^0.1.1",
-    "react-native-vector-icons": "^2.0.3"
+    "lodash": "*",
+    "moment": "*",
+    "react": "^16.4.0",
+    "react-native": "^0.55.4",
+    "react-native-vector-icons": "^4.6.0"
   }
 }

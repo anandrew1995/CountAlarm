@@ -220,7 +220,9 @@ class AlarmDetailsScreen extends Component {
                 {Platform.OS === 'android' ? null :
                     <StatusBarBackground/>
                 }
-                <ScrollView>
+                <ScrollView
+                    keyboardDismissMode='on-drag'
+                    keyboardShouldPersistTaps={true}>
                     <View style={{flexDirection: "row"}}>
                         <TouchableOpacity
                             onPress={() => this.props.navigator.pop()}>
@@ -233,12 +235,11 @@ class AlarmDetailsScreen extends Component {
                         </TouchableOpacity>
                     </View>
                     <Text style={styles.alarmName}>{this.props.alarm.alarmName}</Text>
-                    <Text style={styles.instructions}>{`Notifying when < ${this.props.alarm.notifyAmount} items`}</Text>
                     <Text style={[styles.instructions, {marginTop: deviceHeight*0.03}]}>Add an Item</Text>
                     <TouchableOpacity
                         style={[styles.button, {backgroundColor: "lightgreen", marginTop: 0}]}
                         onPress={(event) => this._navigateToItemAddScreen(this.props.alarm)}>
-                        <Icon name="file-upload" size={25} />
+                        <Icon name="add" size={25} />
                     </TouchableOpacity>
                     <ListView
                         dataSource={this.state.itemDataSource}

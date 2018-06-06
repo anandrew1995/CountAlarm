@@ -149,7 +149,9 @@ class ItemEditScreen extends Component {
 				{Platform.OS === 'android' ? null :
 					<StatusBarBackground/>
 				}
-				<ScrollView>
+				<ScrollView 
+					keyboardDismissMode='on-drag'
+   					keyboardShouldPersistTaps={true}>
 					<TouchableOpacity
                         onPress={() => this._noEdit()}>
                         <Icon name="navigate-before" size={30} />
@@ -215,7 +217,8 @@ const styles = StyleSheet.create({
 	  	height: deviceHeight*0.03*android,
 	  	fontSize: 13,
 	  	borderWidth: 1,
-	  	borderColor: "grey"
+	  	borderColor: "grey",
+	  	textAlign: "center"
   	},
   	button: {
   		justifyContent: 'center',

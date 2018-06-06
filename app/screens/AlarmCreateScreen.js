@@ -27,18 +27,14 @@ class AlarmCreateScreen extends Component {
 		super(props);
 		this.state = {
 			alarmName: "",
-			notifyAmount: "",
-			alarmNameStatus: "",
-			notifyAmountStatus: "",
-			itemCreateViewList: []
+			alarmNameStatus: ""
 		};
 		this._saveAlarm = this._saveAlarm.bind(this);
 	}
 	_saveAlarm() {
 	    AsyncStorage.getItem("AlarmList."+this.state.alarmName).then((value) => {
 	    	this.setState({
-				alarmNameStatus: "",
-				notifyAmountStatus: ""
+				alarmNameStatus: ""
 			});
 	    	if (this.state.alarmName === "") {
 				this.setState({
@@ -50,27 +46,14 @@ class AlarmCreateScreen extends Component {
 					alarmNameStatus: "This name already exists."
 				});
 			}
-    		if (!(this.state.notifyAmount >= 0)) {
-				this.setState({
-					notifyAmountStatus: "You must enter a number."
-				});
-			}
-			else {
-				this.setState({
-					notifyAmountStatus: ""
-				});
-			}
-			if (this.state.alarmNameStatus === "" && this.state.notifyAmountStatus === ""){
+			if (this.state.alarmNameStatus === ""){
 				let alarmDetail = {
-					alarmName: this.state.alarmName,
-					notifyAmount: this.state.notifyAmount
+					alarmName: this.state.alarmName
 				};
 				AsyncStorage.setItem("AlarmList."+alarmDetail.alarmName, JSON.stringify(alarmDetail));
 				this.setState({
 					alarmName: "",
-					notifyAmount: "",
-					alarmNameStatus: "",
-					notifyAmountStatus: ""
+					alarmNameStatus: ""
 				});
 				this.props.navigator.pop();
 			}
@@ -82,7 +65,9 @@ class AlarmCreateScreen extends Component {
 				{Platform.OS === 'android' ? null :
 					<StatusBarBackground/>
 				}
-				<ScrollView>
+				<ScrollView
+					keyboardDismissMode='on-drag'
+   					keyboardShouldPersistTaps={true}>
 					<TouchableOpacity
                         onPress={() => this.props.navigator.pop()}>
                         <Icon name="navigate-before" size={30} />
@@ -95,13 +80,6 @@ class AlarmCreateScreen extends Component {
 						onChangeText={(name) => this.setState({alarmName: name})}/>
 					<Text>{this.state.alarmNameStatus}</Text>
 					<Text style={styles.instructions}>Add Items within the alarm.</Text>
-				    <Text style={styles.instructions}>Notify when any item reaches</Text>
-				    <TextInput
-						autoCapitalize="sentences"
-						style={styles.formInput} 
-						value={this.state.notifyAmount}
-						onChangeText={(amount) => this.setState({notifyAmount: amount})}/>
-					<Text>{this.state.notifyAmountStatus}</Text>
 					<TouchableOpacity
 				    	style={[styles.button, {backgroundColor: "lightgreen"}]}
 				    	onPress={() => this._saveAlarm()}>
@@ -119,7 +97,8 @@ const styles = StyleSheet.create({
 	  	height: deviceHeight*0.03*android,
 	  	fontSize: 13,
 	  	borderWidth: 1,
-	  	borderColor: "grey"
+	  	borderColor: "grey",
+	  	textAlign: "center"
   	},
 	instructions: {
         textAlign: "center",
