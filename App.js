@@ -9,12 +9,6 @@ import AlarmCreateScreen from './app/screens/AlarmCreateScreen'
 import ItemCustomizeScreen from './app/screens/ItemCustomizeScreen'
 
 export default class App extends React.Component {
-    // constructor(props) {
-    //     super(props);
-    //     this.state = {
-    //         selectedTab: "AlarmIndex"
-    //     }
-    // }
     render() {
         return (
             <AppStackNavigator/>
