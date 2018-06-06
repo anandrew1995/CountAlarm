@@ -10,7 +10,8 @@ import {
   	Dimensions,
   	StyleSheet,
 	TouchableOpacity,
-	AsyncStorage
+	AsyncStorage,
+    DeviceEventEmitter
 } from 'react-native';
 import ViewContainer from '../components/ViewContainer';
 import StatusBarBackground from '../components/StatusBarBackground';
@@ -22,16 +23,19 @@ Platform.OS === 'android' ? android = 2 : android = 1;
 let deviceHeight = Dimensions.get('window').height;
 let deviceWidth = Dimensions.get('window').width;
 
-class ItemAddScreen extends Component {
+class ItemCustomizeScreen extends Component {
+    static navigationOptions = {
+		header: null
+	}
 	constructor(props) {
 		super(props);
 		this.state = {
-			itemName: "",
-			itemTotal: "",
-			notifyAmount: "",
-			autoDeductAmount: "",
-			autoDeductPeriod: "",
-			autoDeductPeriodUnit: "day",
+			itemName: this.props.navigation.getParam('item',{}).itemName || "",
+			itemTotal: this.props.navigation.getParam('item',{}).itemTotal || "",
+			notifyAmount: this.props.navigation.getParam('item',{}).notifyAmount || "",
+			autoDeductAmount: this.props.navigation.getParam('item',{}).autoDeductAmount || "",
+			autoDeductPeriod: this.props.navigation.getParam('item',{}).autoDeductPeriod || "",
+			autoDeductPeriodUnit: this.props.navigation.getParam('item',{}).autoDeductPeriodUnit || "day",
 			itemNameStatus: "",
 			itemTotalStatus: "",
 			notifyAmountStatus: "",
@@ -41,7 +45,7 @@ class ItemAddScreen extends Component {
 		this._saveItemDetails = this._saveItemDetails.bind(this);
 	}
 	_saveItemDetails() {
-		AsyncStorage.getItem("ItemList."+this.props.alarm.alarmName+"."+this.state.itemName).then((value) => {
+		AsyncStorage.getItem("ItemList."+this.props.navigation.getParam('alarm').alarmName+"."+this.state.itemName).then((value) => {
 	    	if (this.state.itemName === "") {
 				this.setState({
 					itemNameStatus: "*Required"
@@ -67,7 +71,7 @@ class ItemAddScreen extends Component {
 	    	else {
 	    		if (!(this.state.itemTotal > 0)) {
 					this.setState({
-						itemTotalStatus: "You must enter a number."
+						itemTotalStatus: "You must enter a number > 0."
 					});
 				}
 				else {
@@ -76,8 +80,25 @@ class ItemAddScreen extends Component {
 					});
 				}
 	    	}
+            if (this.state.notifyAmount !== "") {
+                if (!(this.state.notifyAmount >= 0)) {
+					this.setState({
+						notifyAmountStatus: "You must enter a number."
+					});
+				}
+				else {
+					this.setState({
+						notifyAmountStatus: ""
+					});
+				}
+	    	}
+            else {
+                this.setState({
+                    notifyAmountStatus: ""
+                });
+            }
 			if (this.state.autoDeductAmount != "" && this.state.autoDeductPeriod != "") {
-				!(this.state.autoDeductAmount > 0) ?
+				!(this.state.autoDeductAmount >= 0) ?
 					this.setState({
 						autoDeductAmountStatus: "You must enter a number."
 					})
@@ -87,7 +108,7 @@ class ItemAddScreen extends Component {
 					});
 				!(this.state.autoDeductPeriod > 0) ?
 					this.setState({
-						autoDeductPeriodStatus: "You must enter a number."
+						autoDeductPeriodStatus: "You must enter a number > 0."
 					})
 					:
 					this.setState({
@@ -95,20 +116,14 @@ class ItemAddScreen extends Component {
 					});
 			}
 			else if (this.state.autoDeductAmount != "" || this.state.autoDeductPeriod != ""){
-				if (this.state.autoDeductAmount === "") {
-					this.setState({
-						autoDeductAmountStatus: "You must enter both values"
-					});
-				}
-				if (this.state.autoDeductPeriod === "") {
-					this.setState({
-						autoDeductPeriodStatus: "You must enter both values"
-					});
-				}
+                this.setState({
+                    autoDeductAmountStatus: "You must enter both values",
+                    autoDeductPeriodStatus: "You must enter both values"
+                });
 			}
-			if (this.state.itemNameStatus === "" && 
-				this.state.itemTotalStatus === "" && 
-				this.state.autoDeductAmountStatus === "" && 
+			if (this.state.itemNameStatus === "" &&
+				this.state.itemTotalStatus === "" &&
+				this.state.autoDeductAmountStatus === "" &&
 				this.state.autoDeductPeriodStatus === "") {
 				let autoDeductCounter = 0;
 				if (this.state.autoDeductPeriodUnit === "day") {
@@ -150,7 +165,7 @@ class ItemAddScreen extends Component {
 					autoDeductCounter: autoDeductCounter,
 					currentAmount: this.state.itemTotal
 				};
-				AsyncStorage.setItem("ItemList."+this.props.alarm.alarmName+"."+this.state.itemName, JSON.stringify(itemDetail));
+				AsyncStorage.setItem("ItemList."+this.props.navigation.getParam('alarm').alarmName+"."+this.state.itemName, JSON.stringify(itemDetail));
 				this.setState({
 					itemName: "",
 					itemTotal: "",
@@ -163,55 +178,54 @@ class ItemAddScreen extends Component {
 					autoDeductAmountStatus: "",
 					autoDeductPeriodStatus: ""
 				});
-			    this.props.navigator.pop();
+                DeviceEventEmitter.emit('saveItem');
+			    this.props.navigation.goBack();
 			}
 	    }).done();
 	}
 	render() {
 		return (
 			<ViewContainer>
-				{Platform.OS === 'android' ? null :
-					<StatusBarBackground/>
-				}
-				<ScrollView 
+				<StatusBarBackground/>
+				<ScrollView
 					keyboardDismissMode='on-drag'
-   					keyboardShouldPersistTaps={true}>
+   					keyboardShouldPersistTaps="handled">
 					<TouchableOpacity
-                        onPress={() => this.props.navigator.pop()}>
+                        onPress={() => this.props.navigation.goBack()}>
                         <Icon name="navigate-before" size={30} />
                     </TouchableOpacity>
 					<Text style={styles.instructions}>Item Name</Text>
 					<TextInput
 						autoCapitalize="sentences"
-						style={styles.formInput} 
+						style={styles.formInput}
 						value={this.state.itemName}
 						placeholder="Enter a name for this item. (Required)"
 						onChangeText={(name) => this.setState({itemName: name})} />
 					<Text>{this.state.itemNameStatus}</Text>
 					<Text style={styles.instructions}>Item Amount</Text>
 					<TextInput
-						style={styles.formInput} 
+						style={styles.formInput}
 						value={this.state.itemTotal}
 						placeholder="Enter how many you have in total. (Required)"
 						onChangeText={(total) => this.setState({itemTotal: total})} />
 					<Text>{this.state.itemTotalStatus}</Text>
 					<Text style={styles.instructions}>Notify Amount</Text>
 				    <TextInput
-						style={styles.formInput} 
+						style={styles.formInput}
 						value={this.state.notifyAmount}
 						placeholder="Notify when certain amount left. (Default: 0)"
 						onChangeText={(amount) => this.setState({notifyAmount: amount})}/>
 					<Text>{this.state.notifyAmountStatus}</Text>
 					<Text style={styles.instructions}>Auto Deduct</Text>
 					<TextInput
-						style={styles.formInput} 
+						style={styles.formInput}
 						value={this.state.autoDeductAmount}
 						placeholder="Enter how many to deduct every period. (Optional)"
 						onChangeText={(amount) => this.setState({autoDeductAmount: amount})} />
 					<Text>{this.state.autoDeductAmountStatus}</Text>
 					<Text style={styles.instructions}>Every</Text>
 					<TextInput
-						style={styles.formInput} 
+						style={styles.formInput}
 						value={this.state.autoDeductPeriod}
 						placeholder="Enter the frequency of the deduction. (Optional)"
 						onChangeText={(period) => this.setState({autoDeductPeriod: period})} />
@@ -256,4 +270,4 @@ const styles = StyleSheet.create({
   	},
 })
 
-module.exports = ItemAddScreen
+module.exports = ItemCustomizeScreen

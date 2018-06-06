@@ -8,16 +8,15 @@ import {
 class StatusBarBackground extends Component {
 	render() {
 		return (
-			<View style={[styles.statusBarBackground, this.props.style || {}]}>
-			</View>
+            <View class="statusBarBackground" style={[styles.statusBarBackground, this.props.style || {}]}>
+            </View>
 		)
 	}
 }
 
 const styles = StyleSheet.create({
 	statusBarBackground: {
-		height: 20,
-		backgroundColor: "mistyrose"
+		height: 20
 	}
 })
 

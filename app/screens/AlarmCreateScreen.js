@@ -10,7 +10,8 @@ import {
 	Dimensions,
 	Picker,
 	TouchableOpacity,
-	ScrollView
+	ScrollView,
+	DeviceEventEmitter
 } from 'react-native';
 import ViewContainer from '../components/ViewContainer';
 import StatusBarBackground from '../components/StatusBarBackground';
@@ -23,6 +24,9 @@ let deviceHeight = Dimensions.get('window').height;
 let deviceWidth = Dimensions.get('window').width;
 
 class AlarmCreateScreen extends Component {
+	static navigationOptions = {
+		header: null
+	}
 	constructor(props) {
 		super(props);
 		this.state = {
@@ -55,27 +59,26 @@ class AlarmCreateScreen extends Component {
 					alarmName: "",
 					alarmNameStatus: ""
 				});
-				this.props.navigator.pop();
+				DeviceEventEmitter.emit('saveAlarm');
+				this.props.navigation.goBack();
 			}
 	    }).done();
 	}
 	render() {
 		return (
 			<ViewContainer>
-				{Platform.OS === 'android' ? null :
-					<StatusBarBackground/>
-				}
+				<StatusBarBackground/>
 				<ScrollView
 					keyboardDismissMode='on-drag'
-   					keyboardShouldPersistTaps={true}>
+   					keyboardShouldPersistTaps="handled">
 					<TouchableOpacity
-                        onPress={() => this.props.navigator.pop()}>
+                        onPress={() => this.props.navigation.goBack()}>
                         <Icon name="navigate-before" size={30} />
                     </TouchableOpacity>
 					<Text style={styles.instructions}>Alarm Name</Text>
 					<TextInput
 						autoCapitalize="sentences"
-						style={styles.formInput} 
+						style={styles.formInput}
 						value={this.state.alarmName}
 						onChangeText={(name) => this.setState({alarmName: name})}/>
 					<Text>{this.state.alarmNameStatus}</Text>

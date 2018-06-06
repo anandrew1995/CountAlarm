@@ -10,9 +10,8 @@ import {
     AsyncStorage,
     ScrollView,
     Dimensions,
-    Navigator,
     Alert,
-    Platform
+    DeviceEventEmitter
 } from 'react-native';
 
 import ViewContainer from '../components/ViewContainer';
@@ -25,6 +24,9 @@ let deviceHeight = Dimensions.get('window').height;
 let deviceWidth = Dimensions.get('window').width;
 
 class AlarmDetailsScreen extends Component {
+    static navigationOptions = {
+		header: null
+	}
     constructor(props) {
         super(props);
         this.state = {
@@ -32,7 +34,7 @@ class AlarmDetailsScreen extends Component {
             itemCount: 0,
             changeAvailable: true,
             viewEdit: false,
-            alarmName: this.props.alarm.alarmName
+            alarmName: this.props.navigation.getParam('alarm').alarmName
         };
         this._addOne = this._addOne.bind(this);
         this._deductOne = this._deductOne.bind(this);
@@ -51,7 +53,7 @@ class AlarmDetailsScreen extends Component {
             let itemDetail = {
                 currentAmount: item.currentAmount+1
             };
-            AsyncStorage.mergeItem("ItemList."+this.props.alarm.alarmName+"."+item.itemName, JSON.stringify(itemDetail));
+            AsyncStorage.mergeItem("ItemList."+this.state.alarmName+"."+item.itemName, JSON.stringify(itemDetail));
             this.setState({
                 changeAvailable: true
             });
@@ -62,26 +64,21 @@ class AlarmDetailsScreen extends Component {
             let itemDetail = {
                 currentAmount: item.currentAmount-1
             };
-            AsyncStorage.mergeItem("ItemList."+this.props.alarm.alarmName+"."+item.itemName, JSON.stringify(itemDetail));
+            AsyncStorage.mergeItem("ItemList."+this.state.alarmName+"."+item.itemName, JSON.stringify(itemDetail));
             this.setState({
                 changeAvailable: true
             });
         }
     }
     _navigateToItemEditScreen(item) {
-        this.props.navigator.push({
-            id: "ItemEdit",
-            alarm: this.props.alarm,
-            item: item,
-            sceneConfig: Navigator.SceneConfigs.FloatFromBottom
-        });
+        this.props.navigation.navigate('ItemCustomize', { alarm: this.props.navigation.getParam('alarm'), item })
     }
     _editItem(item) {
         this._deleteItem(item);
         this._navigateToItemEditScreen(item);
     }
     _deleteItem(item) {
-        AsyncStorage.removeItem("ItemList."+this.props.alarm.alarmName+"."+item.itemName);
+        AsyncStorage.removeItem("ItemList."+this.state.alarmName+"."+item.itemName);
         this.setState({
             changeAvailable: true
         });
@@ -100,7 +97,7 @@ class AlarmDetailsScreen extends Component {
         let itemDetail = {
             currentAmount: item.itemTotal
         };
-        AsyncStorage.mergeItem("ItemList."+this.props.alarm.alarmName+"."+item.itemName, JSON.stringify(itemDetail));
+        AsyncStorage.mergeItem("ItemList."+this.state.alarmName+"."+item.itemName, JSON.stringify(itemDetail));
         this.setState({
             changeAvailable: true
         });
@@ -110,7 +107,7 @@ class AlarmDetailsScreen extends Component {
             return (
                 <View style={{marginLeft: deviceWidth*0.05, marginTop: deviceHeight*0.02}}>
                     {this.state.viewEdit ?
-                    <View style={{flexDirection: "row"}}> 
+                    <View style={{flexDirection: "row"}}>
                         <TouchableOpacity
                             style={{marginLeft: deviceWidth*0.8}}
                             onPress={() => this._editItem(item)}>
@@ -169,7 +166,7 @@ class AlarmDetailsScreen extends Component {
         AsyncStorage.getAllKeys((err, keys) => {
             let itemKeyList = []
             keys.map((result, i, key) => {
-                if (_.startsWith(key[i], "ItemList."+this.props.alarm.alarmName)) {
+                if (_.startsWith(key[i], "ItemList."+this.state.alarmName)) {
                     itemKeyList.push(key[i]);
                 }
             });
@@ -193,11 +190,7 @@ class AlarmDetailsScreen extends Component {
         });
     }
     _navigateToItemAddScreen(alarm) {
-        this.props.navigator.push({
-            id: "ItemAdd",
-            alarm: alarm,
-            sceneConfig: Navigator.SceneConfigs.FloatFromBottom
-        });
+        this.props.navigation.navigate('ItemCustomize', { alarm });
     }
     _toggleEdit() {
         if (this.state.viewEdit) {
@@ -212,20 +205,21 @@ class AlarmDetailsScreen extends Component {
         }
     }
     componentDidMount() {
+        DeviceEventEmitter.addListener('saveItem', (e)=>{
+			this._getAllItems();
+		});
         this._getAllItems();
     }
     render() {
         return (
             <ViewContainer style={{backgroundColor: "powderblue"}}>
-                {Platform.OS === 'android' ? null :
-                    <StatusBarBackground/>
-                }
+                <StatusBarBackground/>
                 <ScrollView
                     keyboardDismissMode='on-drag'
-                    keyboardShouldPersistTaps={true}>
+                    keyboardShouldPersistTaps="handled">
                     <View style={{flexDirection: "row"}}>
                         <TouchableOpacity
-                            onPress={() => this.props.navigator.pop()}>
+                            onPress={() => this.props.navigation.goBack()}>
                             <Icon name="navigate-before" size={40}/>
                         </TouchableOpacity>
                         <TouchableOpacity
@@ -234,11 +228,11 @@ class AlarmDetailsScreen extends Component {
                             <Icon style={{fontSize: 17}} name="edit" />
                         </TouchableOpacity>
                     </View>
-                    <Text style={styles.alarmName}>{this.props.alarm.alarmName}</Text>
+                    <Text style={styles.alarmName}>{this.state.alarmName}</Text>
                     <Text style={[styles.instructions, {marginTop: deviceHeight*0.03}]}>Add an Item</Text>
                     <TouchableOpacity
                         style={[styles.button, {backgroundColor: "lightgreen", marginTop: 0}]}
-                        onPress={(event) => this._navigateToItemAddScreen(this.props.alarm)}>
+                        onPress={(event) => this._navigateToItemAddScreen(this.props.navigation.getParam('alarm'))}>
                         <Icon name="add" size={25} />
                     </TouchableOpacity>
                     <ListView

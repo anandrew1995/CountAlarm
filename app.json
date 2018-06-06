@@ -1,4 +1,5 @@
 {
-  "name": "CountAlarm",
-  "displayName": "CountAlarm"
+  "expo": {
+    "sdkVersion": "27.0.0"
+  }
 }

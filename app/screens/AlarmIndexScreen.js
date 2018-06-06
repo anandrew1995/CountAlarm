@@ -8,10 +8,8 @@ import {
 	TouchableOpacity,
 	AsyncStorage,
 	Dimensions,
-	Navigator,
 	Alert,
-	DeviceEventEmitter,
-	Platform
+	DeviceEventEmitter
 } from 'react-native';
 import ViewContainer from '../components/ViewContainer';
 import StatusBarBackground from '../components/StatusBarBackground';
@@ -23,6 +21,9 @@ let deviceHeight = Dimensions.get('window').height;
 let deviceWidth = Dimensions.get('window').width;
 
 class AlarmIndexScreen extends Component {
+	static navigationOptions = {
+		header: null
+	}
 	constructor(props) {
 		super(props);
 		this.state = {
@@ -44,11 +45,7 @@ class AlarmIndexScreen extends Component {
 		// AsyncStorage.clear();
 	}
   	_navigateToAlarmDetails(alarm) {
-    	this.props.navigator.push({
-    		id: "AlarmDetails",
-    		alarm: alarm,
-    		sceneConfig: Navigator.SceneConfigs.FloatFromBottom
-    	});
+		this.props.navigation.navigate('AlarmDetails', { alarm });
     	this.setState({
     		changeAvailable: true
     	});
@@ -105,10 +102,7 @@ class AlarmIndexScreen extends Component {
 		});
   	}
   	_createAlarm() {
-  		this.props.navigator.push({
-    		id: "AlarmCreate",
-    		sceneConfig: Navigator.SceneConfigs.FloatFromBottom
-    	});
+  		this.props.navigation.navigate('AlarmCreate');
     	this.setState({
     		changeAvailable: true
     	});
@@ -122,7 +116,9 @@ class AlarmIndexScreen extends Component {
                     itemKeyList.push(key[i]);
                 }
             });
-            AsyncStorage.multiRemove(itemKeyList);
+			if (itemKeyList.length > 0) {
+				AsyncStorage.multiRemove(itemKeyList);
+			}
         });
         this.setState({
         	changeAvailable: true
@@ -144,7 +140,7 @@ class AlarmIndexScreen extends Component {
                 viewEdit: false
             });
         }
-        else if (!this.state.viewEdit) {
+        else {
             this.setState({
                 viewEdit: true
             });
@@ -196,14 +192,15 @@ class AlarmIndexScreen extends Component {
 		// });
   //   }
   	componentDidMount() {
+		DeviceEventEmitter.addListener('saveAlarm', (e)=>{
+			this._getAllAlarms();
+		});
 		this._getAllAlarms();
   	}
   	render() {
 		return (
 			<ViewContainer>
-				{Platform.OS === 'android' ? null :
-					<StatusBarBackground/>
-				}
+				<StatusBarBackground/>
 				<View style={{flexDirection: "row"}}>
 					<Text style={[styles.appName, {flex: 1, marginLeft: deviceWidth*0.07}]}>CountAlarm</Text>
 					<TouchableOpacity
@@ -213,11 +210,6 @@ class AlarmIndexScreen extends Component {
 	                </TouchableOpacity>
                 </View>
 				<Text style={[styles.instructions, {marginTop: deviceHeight*0.05}]}>Add an alarm</Text>
-				<TouchableOpacity
-                    style={[styles.button, {backgroundColor: "lightgreen"}]}
-                    onPress={() => this._createAlarm()}>
-                    <Icon name="add-alarm" size={25} />
-                </TouchableOpacity>
 				<TouchableOpacity
                     style={[styles.button, {backgroundColor: "lightgreen"}]}
                     onPress={() => this._createAlarm()}>
