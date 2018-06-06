@@ -17,7 +17,7 @@ import {
 import ViewContainer from '../components/ViewContainer';
 import StatusBarBackground from '../components/StatusBarBackground';
 import _ from 'lodash';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import { MaterialIcons } from '@expo/vector-icons';
 
 let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 != r2});
 let deviceHeight = Dimensions.get('window').height;
@@ -111,12 +111,12 @@ class AlarmDetailsScreen extends Component {
                         <TouchableOpacity
                             style={{marginLeft: deviceWidth*0.8}}
                             onPress={() => this._editItem(item)}>
-                            <Icon name="mode-edit" size={25} />
+                            <MaterialIcons name="mode-edit" size={25} />
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={{marginLeft: deviceWidth*0.01}}
                             onPress={() => this._confirmDelete(item)}>
-                            <Icon name="clear" size={25} />
+                            <MaterialIcons name="clear" size={25} />
                         </TouchableOpacity>
                     </View>
                     : null}
@@ -143,17 +143,17 @@ class AlarmDetailsScreen extends Component {
                     <TouchableOpacity
                         style={[styles.itemButton, {backgroundColor: "aliceblue"}]}
                         onPress={() => this._addOne(item)}>
-                        <Icon name="exposure-plus-1" size={25} />
+                        <MaterialIcons name="exposure-plus-1" size={25} />
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={[styles.itemButton, {backgroundColor: "lavenderblush"}]}
                         onPress={() => this._deductOne(item)}>
-                        <Icon name="exposure-neg-1" size={25} />
+                        <MaterialIcons name="exposure-neg-1" size={25} />
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={[styles.itemButton, {backgroundColor: "yellowgreen"}]}
                         onPress={() => this._resetCount(item)}>
-                        <Icon name="refresh" size={25} />
+                        <MaterialIcons name="refresh" size={25} />
                     </TouchableOpacity>
                 </View>
             )
@@ -220,12 +220,12 @@ class AlarmDetailsScreen extends Component {
                     <View style={{flexDirection: "row"}}>
                         <TouchableOpacity
                             onPress={() => this.props.navigation.goBack()}>
-                            <Icon name="navigate-before" size={40}/>
+                            <MaterialIcons name="navigate-before" size={40}/>
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={{marginTop: deviceHeight*0.015, marginLeft: deviceWidth*0.83}}
                             onPress={() => this._toggleEdit()}>
-                            <Icon style={{fontSize: 17}} name="edit" />
+                            <MaterialIcons style={{fontSize: 17}} name="edit" />
                         </TouchableOpacity>
                     </View>
                     <Text style={styles.alarmName}>{this.state.alarmName}</Text>
@@ -233,7 +233,7 @@ class AlarmDetailsScreen extends Component {
                     <TouchableOpacity
                         style={[styles.button, {backgroundColor: "lightgreen", marginTop: 0}]}
                         onPress={(event) => this._navigateToItemAddScreen(this.props.navigation.getParam('alarm'))}>
-                        <Icon name="add" size={25} />
+                        <MaterialIcons name="add" size={25} />
                     </TouchableOpacity>
                     <ListView
                         dataSource={this.state.itemDataSource}

@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import ViewContainer from '../components/ViewContainer';
 import StatusBarBackground from '../components/StatusBarBackground';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import { MaterialIcons } from '@expo/vector-icons';
 import moment from 'moment';
 
 let android;
@@ -192,7 +192,7 @@ class ItemCustomizeScreen extends Component {
    					keyboardShouldPersistTaps="handled">
 					<TouchableOpacity
                         onPress={() => this.props.navigation.goBack()}>
-                        <Icon name="navigate-before" size={30} />
+                        <MaterialIcons name="navigate-before" size={30} />
                     </TouchableOpacity>
 					<Text style={styles.instructions}>Item Name</Text>
 					<TextInput
@@ -240,7 +240,7 @@ class ItemCustomizeScreen extends Component {
 					<TouchableOpacity
                         style={[styles.button, {backgroundColor: "lightgreen"}]}
                         onPress={() => this._saveItemDetails()}>
-                        <Icon name="check" size={25} />
+                        <MaterialIcons name="check" size={25} />
                     </TouchableOpacity>
 				</ScrollView>
 			</ViewContainer>

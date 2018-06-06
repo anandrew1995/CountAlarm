@@ -16,7 +16,7 @@ import {
 import ViewContainer from '../components/ViewContainer';
 import StatusBarBackground from '../components/StatusBarBackground';
 import _ from 'lodash';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import { MaterialIcons } from '@expo/vector-icons';
 
 let android;
 Platform.OS === 'android' ? android = 2 : android = 1;
@@ -73,7 +73,7 @@ class AlarmCreateScreen extends Component {
    					keyboardShouldPersistTaps="handled">
 					<TouchableOpacity
                         onPress={() => this.props.navigation.goBack()}>
-                        <Icon name="navigate-before" size={30} />
+                        <MaterialIcons name="navigate-before" size={30} />
                     </TouchableOpacity>
 					<Text style={styles.instructions}>Alarm Name</Text>
 					<TextInput
@@ -86,7 +86,7 @@ class AlarmCreateScreen extends Component {
 					<TouchableOpacity
 				    	style={[styles.button, {backgroundColor: "lightgreen"}]}
 				    	onPress={() => this._saveAlarm()}>
-				        <Icon name="done" size={25}/>
+				        <MaterialIcons name="done" size={25}/>
 				    </TouchableOpacity>
 			    </ScrollView>
 		    </ViewContainer>
