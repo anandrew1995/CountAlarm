@@ -14,7 +14,7 @@ import {
 import ViewContainer from '../components/ViewContainer';
 import StatusBarBackground from '../components/StatusBarBackground';
 import _ from 'lodash';
-import { MaterialIcons } from '@expo/vector-icons';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 != r2});
 let deviceHeight = Dimensions.get('window').height;
@@ -58,13 +58,13 @@ class AlarmIndexScreen extends Component {
 						style={styles.alarmRow}
 						onPress={(event) => this._navigateToAlarmDetails(alarm)}>
 						<Text style={styles.alarmName}>{alarm.alarmName}</Text>
-						<MaterialIcons name="navigate-next" size={10} style={styles.alarmDetailsIcon}/>
+						<Icon name="navigate-next" size={10} style={styles.alarmDetailsIcon}/>
 					</TouchableOpacity>
 					{this.state.viewEdit ?
 	                    <TouchableOpacity
 	                    	style={{marginTop: deviceHeight*0.01}}
 	                        onPress={() => this._confirmDelete(alarm)}>
-	                        <MaterialIcons name="clear" size={25} />
+	                        <Icon name="clear" size={25} />
 	                    </TouchableOpacity>
 	                    : null}
 				</View>
@@ -206,14 +206,14 @@ class AlarmIndexScreen extends Component {
 					<TouchableOpacity
 	                    style={{marginTop: deviceHeight*0.01}}
 	                    onPress={() => this._toggleEdit()}>
-	                    <MaterialIcons style={{fontSize: 17, marginRight: deviceWidth*0.02}} name="edit" size={25} />
+	                    <Icon style={{fontSize: 17, marginRight: deviceWidth*0.02}} name="edit" size={25} />
 	                </TouchableOpacity>
                 </View>
 				<Text style={[styles.instructions, {marginTop: deviceHeight*0.05}]}>Add an alarm</Text>
 				<TouchableOpacity
                     style={[styles.button, {backgroundColor: "lightgreen"}]}
                     onPress={() => this._createAlarm()}>
-                    <MaterialIcons name="add-alarm" size={25} />
+                    <Icon name="add-alarm" size={25} />
                 </TouchableOpacity>
                 {this.state.alarmCount === 0 ?
                 	<Text style={[styles.instructions, {marginTop: deviceHeight*0.3}]}>You have no alarms.</Text>
