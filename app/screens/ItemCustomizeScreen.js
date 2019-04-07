@@ -43,6 +43,7 @@ class ItemCustomizeScreen extends Component {
             autoDeductAmountStatus: "",
             autoDeductPeriodStatus: ""
         }
+        this._noEdit = this._noEdit.bind(this);
         this._saveItemDetails = this._saveItemDetails.bind(this);
 
         BackHandler.addEventListener('hardwareBackPress', function() {
